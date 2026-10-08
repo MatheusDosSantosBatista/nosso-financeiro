@@ -40,7 +40,33 @@ async function objetivos(){let x=await data();return layout('Objetivos','Metas f
 async function relatorios(){let x=await data(),r=x.transactions.filter(t=>t.kind==='income').reduce((s,t)=>s+Number(t.amount),0),d=x.transactions.filter(t=>t.kind==='expense').reduce((s,t)=>s+Number(t.amount),0);return layout('Relatórios','Resumo dos dados que já estão no banco.')+`<div class="grid g3"><div class="card metric"><small>Receitas</small><strong>${brl(r)}</strong></div><div class="card metric"><small>Despesas</small><strong>${brl(d)}</strong></div><div class="card metric"><small>Comprometimento</small><strong>${r?(d/r*100).toFixed(1):0}%</strong></div></div><div class="section card"><div class="notice">📊 Os relatórios passam a refletir os lançamentos reais dos dois usuários conforme a base for preenchida.</div></div>`}
 function config(){return layout('Configurações','Conta, casal e conexão.')+`<div class="card"><h2>Perfil</h2><p><b>${esc(state.profile?.display_name||'Usuário')}</b><br><span class="muted">${esc(state.user?.email||'')}</span></p><div class="notice">☁️ Conectado ao Supabase. Seus dados não dependem do navegador onde o site foi aberto.</div><button class="btn danger" onclick="logout()">Sair da conta</button></div>`}
 async function render(){if(!state.user){document.getElementById('root').innerHTML=login();return}if(!state.coupleId){document.getElementById('root').innerHTML='<div class="login"><div class="loginbox"><h1>Quase pronto</h1><p>Seu usuário foi autenticado, mas ainda não encontramos o vínculo com o casal.</p></div></div>';return}let fn={dashboard,lancamentos,contas,dividas,projetos,objetivos,relatorios,config}[state.page]||dashboard;let content=await fn();document.getElementById('root').innerHTML=shell(content)}
-async function doLogin(e){e.preventDefault();let email=document.getElementById('email').value,password=document.getElementById('password').value;let m=document.getElementById('loginMsg');m.classList.remove('hidden');m.textContent='Entrando...';let {error}=await sb.auth.signInWithPassword({email,password});if(error){m.textContent=error.message;return}m.textContent='Login realizado.'}
+async function doLogin(e){
+e.preventDefault();
+const email=document.getElementById('email').value.trim();
+const password=document.getElementById('password').value;
+const m=document.getElementById('loginMsg');
+m.classList.remove('hidden');m.textContent='Conectando ao Supabase...';
+try{
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),10000);
+  const r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{
+    method:'POST',
+    headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({email,password}),
+    signal:controller.signal
+  });
+  clearTimeout(timer);
+  const txt=await r.text();
+  let body;try{body=JSON.parse(txt)}catch(_){body={raw:txt}}
+  if(!r.ok){m.textContent='❌ Login falhou — HTTP '+r.status+(body?.msg||body?.message?': '+(body.msg||body.message):'');console.error('LOGIN',r.status,body);return;}
+  m.textContent='✅ Login respondeu. Carregando seu financeiro...';
+  const {error}=await sb.auth.setSession({access_token:body.access_token,refresh_token:body.refresh_token});
+  if(error){m.textContent='❌ Sessão: '+error.message;return;}
+}catch(err){
+  console.error('LOGIN ERROR',err);
+  m.textContent=err?.name==='AbortError'?'❌ Login expirou após 10 segundos (timeout).':'❌ Erro no login: '+(err?.message||String(err));
+}
+}
 async function logout(){await sb.auth.signOut()}
 function go(p){state.page=p;render()}
 async function del(table,id){if(!confirm('Excluir este item?'))return;let {error}=await sb.from(table).delete().eq('id',id);if(error)toast(error.message);else{toast('Excluído');render()}}
