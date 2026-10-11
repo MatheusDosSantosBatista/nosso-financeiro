@@ -28,6 +28,85 @@ body.dark-mode .toast{background:#244a70;color:#fff}
 body.dark-mode .metric[style*="linear-gradient"]{background:linear-gradient(135deg,#111418,#202833)!important}
 .theme-toggle{white-space:nowrap}
 
+
+
+/* Identidade visual profissional — cores secundárias com significado */
+:root{
+  --bg:#f5f7fb; --card:#ffffff; --ink:#182638; --muted:#687789;
+  --navy:#193b5a; --terr:#3977a8; --moss:#23845b; --beige:#edf2f8;
+  --line:#e0e7ef; --danger:#c0392b; --shadow:0 8px 26px rgba(28,48,74,.07);
+  --accent-blue:#3478b8; --accent-teal:#138a8a; --accent-purple:#7564bd;
+  --accent-coral:#d66b58; --accent-green:#27845b; --accent-amber:#b98220;
+}
+body{background:var(--bg);color:var(--ink)}
+.side{background:linear-gradient(180deg,#fff 0%,#f8faff 100%);box-shadow:3px 0 18px rgba(25,59,90,.025)}
+.brand{color:#193b5a;letter-spacing:-.55px;position:relative}
+.brand:after{content:"";display:block;width:42px;height:4px;border-radius:5px;margin:12px 0 0 0;background:linear-gradient(90deg,#3478b8 0 34%,#138a8a 34% 67%,#7564bd 67%)}
+.brand small{letter-spacing:.1px}
+.nav{gap:7px}
+.nav button{border:1px solid transparent;transition:background .18s ease,border-color .18s ease,transform .18s ease;font-weight:500}
+.nav button:hover{transform:translateX(2px)}
+.nav button:nth-child(1).active{background:#e7f0fb;color:#245f9b;border-color:#d3e4f7}
+.nav button:nth-child(2).active{background:#e1f5f2;color:#087b76;border-color:#c5eae5}
+.nav button:nth-child(3).active{background:#eee9fc;color:#6651ad;border-color:#ded5fa}
+.nav button:nth-child(4).active{background:#fff0e9;color:#b84d35;border-color:#f8d9cc}
+.nav button:nth-child(5).active{background:#fbe8ef;color:#ad3e69;border-color:#f4d1df}
+.nav button:nth-child(6).active{background:#e5f5e9;color:#237348;border-color:#cdebd6}
+.nav button:nth-child(7).active{background:#fff4d9;color:#91600b;border-color:#f5e4b1}
+.nav button:nth-child(8).active{background:#e9eef3;color:#4a5b6c;border-color:#d9e1e9}
+.title h1{color:#183b5b;letter-spacing:-.8px;font-weight:800;position:relative;padding-left:14px}
+.title h1:before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:4px;border-radius:5px;background:linear-gradient(180deg,#3478b8,#138a8a)}
+.title p{font-size:13px}
+.section h2{color:#234765;font-weight:750;letter-spacing:-.25px}
+.card{box-shadow:var(--shadow);transition:transform .18s ease,box-shadow .18s ease;border-radius:16px}
+.card:hover{box-shadow:0 12px 30px rgba(28,48,74,.09)}
+.grid.g4>.card:nth-child(4n+1){border-top:3px solid #3478b8}
+.grid.g4>.card:nth-child(4n+2){border-top:3px solid #138a8a}
+.grid.g4>.card:nth-child(4n+3){border-top:3px solid #7564bd}
+.grid.g4>.card:nth-child(4n){border-top:3px solid #d66b58}
+.grid.g3>.card:nth-child(3n+1){border-top:3px solid #3478b8}
+.grid.g3>.card:nth-child(3n+2){border-top:3px solid #138a8a}
+.grid.g3>.card:nth-child(3n){border-top:3px solid #7564bd}
+.grid.g2>.card:nth-child(2n+1){border-top:3px solid #3478b8}
+.grid.g2>.card:nth-child(2n){border-top:3px solid #138a8a}
+.metric strong{letter-spacing:-.7px;font-weight:800}
+.metric small{font-weight:650;letter-spacing:.15px}
+.tag{background:#e8f0f8;color:#355b7c;font-weight:650}
+.thumb{background:#edf3fa}
+.btn{transition:filter .15s ease,transform .15s ease;box-shadow:0 1px 2px rgba(15,23,42,.025)}
+.btn:hover{filter:brightness(.98);transform:translateY(-1px)}
+.btn.primary{background:#244f76;border-color:#244f76}
+.form input:focus,.form select:focus,.form textarea:focus{border-color:#5d9bd0;box-shadow:0 0 0 3px rgba(52,120,184,.13)}
+.notice{background:#eaf2fa;color:#2d4d69;border-left:3px solid #3478b8}
+.status{background:#eaf2fa;color:#2d4d69}
+.loginbox h1{color:#193b5a;letter-spacing:-.8px}
+.avatar{background:#dceafa;color:#244f76}
+
+/* Paleta equivalente no tema escuro, mantendo contraste e identidade */
+body.dark-mode{--bg:#07090d;--card:#11161d;--ink:#f4f7fb;--muted:#a4afbd;--navy:#9ac7f0;--terr:#78b4e5;--moss:#65d29b;--beige:#202a36;--line:#2a3542;--danger:#ff8178;--shadow:0 8px 28px rgba(0,0,0,.32);background:#07090d;color:#f4f7fb}
+body.dark-mode .side{background:linear-gradient(180deg,#10151c 0%,#0c1117 100%);border-color:#27313c}
+body.dark-mode .brand{color:#e8f2fc}
+body.dark-mode .title h1{color:#f0f6fc}
+body.dark-mode .section h2{color:#d8e8f7}
+body.dark-mode .nav button:nth-child(1).active{background:#1b3045;color:#b7dcff;border-color:#294866}
+body.dark-mode .nav button:nth-child(2).active{background:#153533;color:#a4eee5;border-color:#245451}
+body.dark-mode .nav button:nth-child(3).active{background:#292340;color:#d2c7ff;border-color:#403565}
+body.dark-mode .nav button:nth-child(4).active{background:#3a2522;color:#ffc0ad;border-color:#5b3731}
+body.dark-mode .nav button:nth-child(5).active{background:#3a202c;color:#ffc0d5;border-color:#5c3043}
+body.dark-mode .nav button:nth-child(6).active{background:#1b3327;color:#b0efc3;border-color:#2b513a}
+body.dark-mode .nav button:nth-child(7).active{background:#382e19;color:#ffe1a0;border-color:#594824}
+body.dark-mode .nav button:nth-child(8).active{background:#252d36;color:#d3dee8;border-color:#3b4856}
+body.dark-mode .tag{background:#202c39;color:#d2e5f7}
+body.dark-mode .thumb{background:#202c39}
+body.dark-mode .notice,body.dark-mode .status{background:#1a2938!important;color:#d8e9f8!important;border-left-color:#6ca6d8}
+body.dark-mode .avatar{background:#233c54;color:#c9e4ff}
+body.dark-mode .grid.g4>.card,body.dark-mode .grid.g3>.card,body.dark-mode .grid.g2>.card{border-left-color:var(--line);border-right-color:var(--line);border-bottom-color:var(--line)}
+body.dark-mode .grid.g4>.card:nth-child(4n+1),body.dark-mode .grid.g3>.card:nth-child(3n+1),body.dark-mode .grid.g2>.card:nth-child(2n+1){border-top-color:#5b9fe0}
+body.dark-mode .grid.g4>.card:nth-child(4n+2),body.dark-mode .grid.g3>.card:nth-child(3n+2),body.dark-mode .grid.g2>.card:nth-child(2n){border-top-color:#45bdb3}
+body.dark-mode .grid.g4>.card:nth-child(4n+3),body.dark-mode .grid.g3>.card:nth-child(3n){border-top-color:#a397ec}
+body.dark-mode .grid.g4>.card:nth-child(4n){border-top-color:#ee927e}
+@media(max-width:900px){.nav button:hover{transform:none}}
+
 </style>
 </head>
 <body>
