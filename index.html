@@ -314,6 +314,24 @@ html{overflow-x:hidden}body{min-width:320px} .app,.main,.card,.section,.grid,.gr
 @media(max-width:720px){.main{padding:14px}.top>.title{flex-basis:100%}.top>.actions{width:100%;justify-content:flex-start}.title h1{font-size:22px}.nf-project-card{padding:16px}.nf-project-card h3{font-size:17px}.nf-project-menu .nf-menu-items{right:0}.modalbox{padding:17px}.formgrid{grid-template-columns:minmax(0,1fr)}.formgrid .full{grid-column:auto}.grid.g3,.grid.g2{grid-template-columns:minmax(0,1fr)}.section.card>.grid.g2>.card>.row .mini{text-align:left}}
 @media(max-width:400px){.section.card>.grid.g2>.card>.actions{grid-template-columns:1fr}.nf-project-card>.row:first-of-type{padding-right:45px}.btn{font-size:13px}.top .actions .btn{flex:1 1 130px}}
 
+
+/* Ajuste específico: cabeçalho de cartões de projeto sem colisões */
+.nf-project-card{position:relative;min-width:0}
+.nf-project-card > .row{display:grid!important;grid-template-columns:44px minmax(0,1fr) 42px;align-items:center!important;gap:10px!important;padding-right:0!important;min-height:44px;flex-wrap:nowrap!important}
+.nf-project-card > .row > .thumb{grid-column:1;grid-row:1}
+.nf-project-card > .row > .tag{grid-column:2;grid-row:1;justify-self:start;max-width:100%;white-space:normal;overflow-wrap:anywhere;font-size:10px}
+.nf-project-card > .nf-project-menu{position:absolute;top:20px;right:20px;width:38px;height:38px;z-index:7}
+.nf-project-card > .nf-project-menu > button{width:38px;height:38px;position:relative;z-index:2}
+.nf-project-card > .nf-project-menu .nf-menu-items{z-index:12}
+.nf-project-card .nf-goal-rollup{min-width:0;overflow:hidden}
+.nf-project-card .nf-goal-rollup > .row{display:grid!important;grid-template-columns:minmax(0,1fr) max-content;align-items:baseline!important;gap:7px 10px!important;min-width:0}
+.nf-project-card .nf-goal-rollup > .row > span{min-width:0;overflow-wrap:break-word;line-height:1.4}
+.nf-project-card .nf-goal-rollup > .row > b{min-width:0;margin:0!important;white-space:nowrap;text-align:right;line-height:1.4}
+.nf-project-card > .mini{overflow-wrap:break-word}
+@media(max-width:1050px){.nf-project-card > .nf-project-menu{top:17px;right:17px}}
+@media(max-width:720px){.nf-project-card > .nf-project-menu{top:16px;right:16px}.nf-project-card > .row{grid-template-columns:44px minmax(0,1fr) 42px}}
+@media(max-width:360px){.nf-project-card .nf-goal-rollup > .row{grid-template-columns:minmax(0,1fr)}.nf-project-card .nf-goal-rollup > .row > b{text-align:left}}
+
 </style>
 </head>
 <body>
@@ -348,7 +366,7 @@ function projectCard(p){
  const estimated=items.reduce((n,i)=>n+Number(i.estimated_amount||0),0);
  const paid=items.reduce((n,i)=>n+Number(i.paid_amount||0),0);
  const pct=items.length?items.reduce((n,i)=>n+Number(i.progress_percent||0),0)/items.length:(Number(p.target_amount)?Math.min(100,Number(p.saved_amount)/Number(p.target_amount)*100):0);
- return `<div class="card nf-project-card nf-record-click" role="button" tabindex="0" data-nf-record="project" data-nf-id="${esc(p.id)}" title="Abrir projeto"><div class="nf-project-menu"><button type="button" class="btn" onclick="event.stopPropagation();toggleProjectMenu(event,'${p.id}')" aria-label="Opções do projeto" title="Opções">⋯</button><div class="nf-menu-items hidden" id="nf-menu-${p.id}"><button type="button" onclick="event.stopPropagation();hideProjectMenus();editProject('${p.id}')">Editar</button><button type="button" onclick="event.stopPropagation();hideProjectMenus();del('projects','${p.id}')">Excluir</button></div></div><div class="row"><div class="thumb">${esc(p.emoji||'🎯')}</div><span class="tag" >Projeto do casal</span></div><h3>${esc(p.name)}</h3><p class="muted">${esc(p.target_date||'Data não definida')} · ${esc(p.place||'Local não definido')}</p><div class="progressline"><span>${items.length?items.length+' subobjetivo(s)':'Meta financeira'}</span><span>${pct.toFixed(0)}% de progresso</span></div><div class="bar"><div class="fill" style="width:${pct}%;background-color:${progressColor(pct)}"></div></div>${items.length?`<div class="nf-goal-rollup"><div class="row"><span>Orçamento das etapas</span><b>${brl(estimated)}</b></div><div class="row"><span>Total pago nas etapas</span><b class="positive">${brl(paid)}</b></div><div class="row"><span>Falta pagar</span><b>${brl(Math.max(0,estimated-paid))}</b></div></div>`:''}<p class="mini">Reservado no projeto: ${brl(p.saved_amount)} · Meta: ${brl(p.target_amount)}. Valores reservados e pagos são distintos.</p></div>`
+ return `<div class="card nf-project-card nf-record-click" role="button" tabindex="0" data-nf-record="project" data-nf-id="${esc(p.id)}" aria-label="Abrir projeto ${esc(p.name)}"><div class="nf-project-menu"><button type="button" class="btn" onclick="event.stopPropagation();toggleProjectMenu(event,'${p.id}')" aria-label="Opções do projeto" title="Opções">⋯</button><div class="nf-menu-items hidden" id="nf-menu-${p.id}"><button type="button" onclick="event.stopPropagation();hideProjectMenus();editProject('${p.id}')">Editar</button><button type="button" onclick="event.stopPropagation();hideProjectMenus();del('projects','${p.id}')">Excluir</button></div></div><div class="row"><div class="thumb">${esc(p.emoji||'🎯')}</div><span class="tag" >Projeto do casal</span></div><h3>${esc(p.name)}</h3><p class="muted">${esc(p.target_date||'Data não definida')} · ${esc(p.place||'Local não definido')}</p><div class="progressline"><span>${items.length?items.length+' subobjetivo(s)':'Meta financeira'}</span><span>${pct.toFixed(0)}% de progresso</span></div><div class="bar"><div class="fill" style="width:${pct}%;background-color:${progressColor(pct)}"></div></div>${items.length?`<div class="nf-goal-rollup"><div class="row"><span>Orçamento das etapas</span><b>${brl(estimated)}</b></div><div class="row"><span>Total pago nas etapas</span><b class="positive">${brl(paid)}</b></div><div class="row"><span>Falta pagar</span><b>${brl(Math.max(0,estimated-paid))}</b></div></div>`:''}<p class="mini">Reservado no projeto: ${brl(p.saved_amount)} · Meta: ${brl(p.target_amount)}. Valores reservados e pagos são distintos.</p></div>`
 }
 
 function dashboardPrefs(){const defaults=['balance','alerts','metrics','projects','transactions','partner','organization'];try{let saved=JSON.parse(localStorage.getItem('nf-dashboard-'+state.user.id)||'null');if(saved&&Array.isArray(saved.order)){let order=[...saved.order.filter(k=>defaults.includes(k)),...defaults.filter(k=>!saved.order.includes(k))];return {order,hidden:Array.isArray(saved.hidden)?saved.hidden.filter(k=>defaults.includes(k)):[]}}}catch(e){}return {order:defaults,hidden:[]}}
