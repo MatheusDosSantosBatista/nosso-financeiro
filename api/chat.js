@@ -1,4 +1,3 @@
-
 if (!gr.ok) {
   const code = gr.status;
   const details = await gr.text();
