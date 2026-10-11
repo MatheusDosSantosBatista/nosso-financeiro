@@ -221,6 +221,7 @@ body.dark-mode .alert-overdue .alert-dot{background:#858b98}body.dark-mode .aler
 .main .card.nf-card-limited:not(.nf-card-expanded):not(.dash-card-is-collapsed) .nf-limit-content.nf-is-overflowing:after{content:'';position:absolute;bottom:0;left:0;right:0;height:35px;pointer-events:none;background:linear-gradient(transparent,var(--card))}
 .main .card .nf-expand-action{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:12px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--navy);font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s}
 .main .card .nf-expand-action:hover{background:var(--beige)}
+.main .card .nf-expand-action[hidden]{display:none!important}
 .main .card.dash-card-is-collapsed .nf-expand-action{display:none!important}
 .nf-slot-balance .nf-card-limited{--nf-card-limit:340px}
 .nf-slot-alerts .nf-card-limited{--nf-card-limit:245px}
@@ -304,9 +305,17 @@ function enhanceExpandableCards(){
       if(!expanded)card.scrollIntoView({block:'nearest',behavior:'smooth'});
     });
     card.appendChild(button);
-    const height=parseInt(getComputedStyle(card).getPropertyValue('--nf-card-limit'))||260;
-    if(body.scrollHeight>height+8){body.classList.add('nf-is-overflowing');button.hidden=false}
-    else{button.hidden=true}
+    const height=parseFloat(getComputedStyle(body).maxHeight)||260;
+    // The button only exists visually if the natural content exceeds its limit.
+    // Use a second layout frame so fonts, grid widths and inserted controls settle.
+    const updateOverflow=()=>{
+      const over=body.scrollHeight>height+2;
+      body.classList.toggle('nf-is-overflowing',over);
+      button.hidden=!over;
+      if(!over){card.classList.remove('nf-card-expanded');button.setAttribute('aria-expanded','false')}
+    };
+    updateOverflow();
+    requestAnimationFrame(updateOverflow);
   });
 }
 
