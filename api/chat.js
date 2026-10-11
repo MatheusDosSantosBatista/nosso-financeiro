@@ -1,14 +1,19 @@
-// Vercel Serverless Function. Segredos somente em Environment Variables.
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-const json = (res, status, data) => res.status(status).setHeader('Cache-Control','no-store').json(data);
-async function api(path, token, key, opts={}) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...opts, headers: {apikey:key, Authorization:`Bearer ${token}`, 'Content-Type':'application/json', ...(opts.headers||{})} });
-  if (!r.ok) throw new Error(`Falha ao consultar dados (${r.status})`);
-  return r.status === 204 ? null : r.json();
+
+if (!gr.ok) {
+  const code = gr.status;
+  const details = await gr.text();
+
+  console.error(
+    'Gemini API error:',
+    code,
+    details.slice(0, 1500)
+  );
+
+  return json(res, code === 429 ? 429 : 502, {
+    error: code === 429
+      ? 'Limite gratuito da IA atingido. Tente mais tarde.'
+      : 'Falha na comunicação com a IA. Consulte os logs da Vercel.'
+  });
 }
 module.exports = async (req,res) => {
   if(req.method!=='POST') return json(res,405,{error:'Método não permitido'});
