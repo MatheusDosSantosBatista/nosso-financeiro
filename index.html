@@ -980,7 +980,15 @@ function nfEloToggleArchive(){nfEloShowArchive=!nfEloShowArchive;render();}
 function nfEloKeyboard(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();e.target.form?.requestSubmit();}}
 async function assistente(){
  const r=await sb.from('ai_messages').select('id,role,content,created_at').eq('owner_user_id',state.user.id).order('created_at',{ascending:false}).limit(500);
- const error=r.error;nfAiHistory=error?[]:(r.data||[]).reverse();
+ const error=r.error;
+ // A API grava pergunta e resposta juntas; ambas podem ter o mesmo created_at.
+ // Nesse empate, exibir primeiro a pergunta e depois a resposta.
+ nfAiHistory=error?[]:(r.data||[]).sort((a,b)=>{
+  const delta=new Date(a.created_at).getTime()-new Date(b.created_at).getTime();
+  if(delta!==0)return delta;
+  if(a.role===b.role)return 0;
+  return a.role==='user'?-1:1;
+ });
  const sessions=nfEloSessions(nfAiHistory);
  const now=Date.now();
  const latest=sessions[sessions.length-1]||[];
