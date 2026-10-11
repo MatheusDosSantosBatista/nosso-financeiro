@@ -491,6 +491,15 @@ body.dark-mode .card:hover{box-shadow:0 4px 18px rgba(0,0,0,.24)}
 .card .row{min-width:0}
 .card .row>h2,.card .row>h3{min-width:0;overflow-wrap:anywhere}
 @media(max-width:850px){.nf-project-card>.nf-project-header{grid-template-columns:30px minmax(0,1fr) 24px!important}}
+
+/* Detalhamento financeiro consistente em projetos compartilhados e objetivos pessoais */
+.nf-financial-details{display:grid;gap:9px;padding:14px 0;margin:14px 0 8px;border-top:1px solid var(--border,#e4e9ef);border-bottom:1px solid var(--border,#e4e9ef);background:transparent;min-width:0}
+.nf-financial-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:12px;min-width:0;font-size:13px;line-height:1.4}
+.nf-financial-row span{min-width:0;overflow-wrap:anywhere;color:var(--muted,#607186)}
+.nf-financial-row strong{font-weight:650;white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right;color:var(--text,#1b2c40)}
+.nf-financial-row strong.positive{color:var(--green,#17835a)}
+.nf-financial-note{line-height:1.5;margin:8px 0 0}
+@media(max-width:480px){.nf-financial-row{font-size:12px;gap:8px}.nf-financial-details{padding:12px 0}}
 </style>
 </head>
 <body>
@@ -520,12 +529,13 @@ async function data(){if(!state.coupleId)return {transactions:[],accounts:[],deb
 function progressColor(percent){let p=Math.max(0,Math.min(100,Number(percent)||0));const stops=[{p:0,c:[224,68,68]},{p:35,c:[243,154,56]},{p:65,c:[216,189,66]},{p:100,c:[39,132,91]}];let a=stops[0],b=stops[stops.length-1];for(let i=0;i<stops.length-1;i++){if(p>=stops[i].p&&p<=stops[i+1].p){a=stops[i];b=stops[i+1];break}}let t=(p-a.p)/(b.p-a.p||1),c=a.c.map((v,i)=>Math.round(v+(b.c[i]-v)*t));return `rgb(${c[0]}, ${c[1]}, ${c[2]})`}
 function hideProjectMenus(){document.querySelectorAll('.nf-project-menu .nf-menu-items').forEach(el=>el.classList.add('hidden'))}
 function toggleProjectMenu(event,id){event.preventDefault();const menu=document.getElementById('nf-menu-'+id);const show=menu?.classList.contains('hidden');hideProjectMenus();if(show)menu.classList.remove('hidden')}
+function nfFinancialDetails(rows){return `<div class="nf-financial-details" aria-label="Detalhamento financeiro">${rows.map(r=>`<div class="nf-financial-row"><span>${esc(r[0])}</span><strong class="${r[2]||''}">${brl(r[1])}</strong></div>`).join('')}</div>`}
 function projectCard(p){
  const items=(window.__nfProjectItems||[]).filter(i=>i.project_id===p.id);
  const estimated=items.reduce((n,i)=>n+Number(i.estimated_amount||0),0);
  const paid=items.reduce((n,i)=>n+Number(i.paid_amount||0),0);
  const pct=items.length?items.reduce((n,i)=>n+Number(i.progress_percent||0),0)/items.length:(Number(p.target_amount)?Math.min(100,Number(p.saved_amount)/Number(p.target_amount)*100):0);
- return `<div class="card nf-project-card nf-record-click" role="button" tabindex="0" data-nf-record="project" data-nf-id="${esc(p.id)}"><div class="nf-project-header"><div class="thumb">${esc(p.emoji||'🎯')}</div><span class="nf-project-header-spacer"></span><div class="nf-project-menu"><button type="button" class="btn" onclick="event.stopPropagation();toggleProjectMenu(event,'${p.id}')" aria-label="Opções do projeto" title="Opções">⋯</button><div class="nf-menu-items hidden" id="nf-menu-${p.id}"><button type="button" onclick="event.stopPropagation();hideProjectMenus();editProject('${p.id}')">Editar</button><button type="button" onclick="event.stopPropagation();hideProjectMenus();del('projects','${p.id}')">Excluir</button></div></div></div><h3>${esc(p.name)}</h3><p class="muted">${esc(p.target_date||'Data não definida')} · ${esc(p.place||'Local não definido')}</p><div class="progressline"><span>${items.length?items.length+' subobjetivo(s)':'Meta financeira'}</span><span>${pct.toFixed(0)}% de progresso</span></div><div class="bar"><div class="fill" style="width:${pct}%;background-color:${progressColor(pct)}"></div></div>${items.length?`<div class="nf-goal-rollup"><div class="row"><span>Orçamento das etapas</span><b>${brl(estimated)}</b></div><div class="row"><span>Total pago nas etapas</span><b class="positive">${brl(paid)}</b></div><div class="row"><span>Falta pagar</span><b>${brl(Math.max(0,estimated-paid))}</b></div></div>`:''}<p class="mini">Reservado no projeto: ${brl(p.saved_amount)} · Meta: ${brl(p.target_amount)}. Valores reservados e pagos são distintos.</p></div>`
+ return `<div class="card nf-project-card nf-record-click" role="button" tabindex="0" data-nf-record="project" data-nf-id="${esc(p.id)}"><div class="nf-project-header"><div class="thumb">${esc(p.emoji||'🎯')}</div><span class="nf-project-header-spacer"></span><div class="nf-project-menu"><button type="button" class="btn" onclick="event.stopPropagation();toggleProjectMenu(event,'${p.id}')" aria-label="Opções do projeto" title="Opções">⋯</button><div class="nf-menu-items hidden" id="nf-menu-${p.id}"><button type="button" onclick="event.stopPropagation();hideProjectMenus();editProject('${p.id}')">Editar</button><button type="button" onclick="event.stopPropagation();hideProjectMenus();del('projects','${p.id}')">Excluir</button></div></div></div><h3>${esc(p.name)}</h3><p class="muted">${esc(p.target_date||'Data não definida')} · ${esc(p.place||'Local não definido')}</p><div class="progressline"><span>${items.length?items.length+' subobjetivo(s)':'Meta financeira'}</span><span>${pct.toFixed(0)}% de progresso</span></div><div class="bar"><div class="fill" style="width:${pct}%;background-color:${progressColor(pct)}"></div></div>${nfFinancialDetails([['Orçamento geral',Number(p.target_amount)||0],['Etapas previstas',estimated],['Pago nas etapas',paid,'positive'],['Falta pagar nas etapas',Math.max(0,estimated-paid)],['Valor reservado',Number(p.saved_amount)||0]])}<p class="mini nf-financial-note">Orçamento geral, pagamentos e reservas são valores distintos.</p></div>`
 }
 
 function dashboardPrefs(){const defaults=['balance','alerts','metrics','projects','transactions','partner','organization'];try{let saved=JSON.parse(localStorage.getItem('nf-dashboard-'+state.user.id)||'null');if(saved&&Array.isArray(saved.order)){let order=[...saved.order.filter(k=>defaults.includes(k)),...defaults.filter(k=>!saved.order.includes(k))];return {order,hidden:Array.isArray(saved.hidden)?saved.hidden.filter(k=>defaults.includes(k)):[]}}}catch(e){}return {order:defaults,hidden:[]}}
@@ -714,9 +724,25 @@ async function deleteProjectItem(id){const pr=await sb.from('project_payments').
 async function objetivos(){
  const {data:goals,error}=await sb.from('personal_goals').select('*').eq('owner_user_id',state.user.id).order('created_at',{ascending:false});
  if(error)return layout('Objetivos pessoais','Seus planos individuais, separados dos projetos do casal.')+`<div class="notice">Não foi possível carregar os objetivos pessoais: ${esc(error.message)}. Execute primeiro o SQL de Objetivos Pessoais no Supabase.</div>`;
- const cards=(goals||[]).map(g=>{const target=Number(g.target_amount)||0,saved=Number(g.saved_amount)||0,pct=target?Math.min(100,100*saved/target):0;return `<div class="card nf-personal-card"><div class="row nf-personal-head"><h3>${esc(g.name)}</h3><button class="nf-mini-menu" type="button" onclick="event.stopPropagation();personalGoalMenu('${g.id}')" aria-label="Opções do objetivo">⋯</button></div><div class="mini">${g.deadline?'Prazo: '+esc(g.deadline):'Sem prazo definido'}</div><div class="nf-personal-amount">${brl(saved)} <span class="muted">de ${brl(target)}</span></div><div class="bar"><div class="fill" style="width:${pct}%;background:var(--navy)"></div></div><div class="progressline"><span>${pct.toFixed(0)}% da meta</span><span>Faltam ${brl(Math.max(0,target-saved))}</span></div>${g.notes?`<p class="mini">${esc(g.notes)}</p>`:''}<div class="actions"><button class="btn" onclick="personalGoalLinks('${g.id}')">Lançamentos vinculados</button><button class="btn" onclick="personalGoalForm('${g.id}')">Editar</button></div></div>`}).join('');
+ let linkedTotals={};
+ if((goals||[]).length){
+  const ids=goals.map(g=>g.id);
+  const lr=await sb.from('personal_goal_links').select('goal_id,transaction_id').eq('owner_user_id',state.user.id).in('goal_id',ids);
+  if(lr.error){toast('Não foi possível consultar as despesas vinculadas: '+lr.error.message)}
+  else if(lr.data?.length){
+   const txids=[...new Set(lr.data.map(l=>l.transaction_id))];
+   const tr=await sb.from('transactions').select('id,amount').eq('owner_user_id',state.user.id).eq('ownership','individual').eq('kind','expense').is('deleted_at',null).in('id',txids);
+   if(tr.error){toast('Não foi possível calcular despesas vinculadas: '+tr.error.message)}
+   else {const amounts=new Map((tr.data||[]).map(t=>[t.id,Number(t.amount)||0]));for(const l of lr.data){linkedTotals[l.goal_id]=(linkedTotals[l.goal_id]||0)+(amounts.get(l.transaction_id)||0)}}
+  }
+ }
+ const cards=(goals||[]).map(g=>{
+  const target=Number(g.target_amount)||0,saved=Number(g.saved_amount)||0,linked=linkedTotals[g.id]||0,pct=target?Math.min(100,100*saved/target):0;
+  return `<div class="card nf-personal-card"><div class="row nf-personal-head"><h3>${esc(g.name)}</h3><button class="nf-mini-menu" type="button" onclick="event.stopPropagation();personalGoalMenu('${g.id}')" aria-label="Opções do objetivo">⋯</button></div><div class="mini">${g.deadline?'Prazo: '+esc(g.deadline):'Sem prazo definido'}</div><div class="progressline"><span>Progresso da reserva</span><span>${pct.toFixed(0)}%</span></div><div class="bar"><div class="fill" style="width:${pct}%;background:var(--navy)"></div></div>${nfFinancialDetails([['Meta financeira',target],['Valor reservado',saved,'positive'],['Falta reservar',Math.max(0,target-saved)],['Despesas vinculadas',linked]])}<p class="mini nf-financial-note">Despesas vinculadas são informativas e não aumentam o valor reservado.</p>${g.notes?`<p class="mini">${esc(g.notes)}</p>`:''}<div class="actions"><button class="btn" onclick="personalGoalLinks('${g.id}')">Lançamentos vinculados</button><button class="btn" onclick="personalGoalForm('${g.id}')">Editar</button></div></div>`
+ }).join('');
  return layout('Objetivos pessoais','Metas que pertencem somente à sua conta.',`<button class="btn primary" onclick="personalGoalForm()">+ Novo objetivo</button>`)+`<div class="grid g3">${cards||'<div class="empty">Você ainda não tem objetivos pessoais. Crie uma meta, como um videogame ou celular.</div>'}</div>`;
 }
+
 async function personalGoalForm(id){let g=null;if(id){let r=await sb.from('personal_goals').select('*').eq('id',id).eq('owner_user_id',state.user.id).single();if(r.error){toast(r.error.message);return}g=r.data}
  modal(id?'Editar objetivo pessoal':'Novo objetivo pessoal',`<div class="formgrid"><label class="full">Nome<input id="pg_name" required value="${esc(g?.name||'')}" placeholder="Ex.: PlayStation, celular"></label><label>Meta financeira<input id="pg_target" type="number" min="0" step="0.01" value="${Number(g?.target_amount||0)}"></label><label>Valor reservado<input id="pg_saved" type="number" min="0" step="0.01" value="${Number(g?.saved_amount||0)}"></label><label>Prazo<input id="pg_deadline" type="date" value="${esc(g?.deadline||'')}"></label><label class="full">Observações<textarea id="pg_notes">${esc(g?.notes||'')}</textarea></label></div><p class="mini">O valor reservado é um controle de meta: não movimenta o saldo de contas automaticamente.</p>`,`savePersonalGoal(event,${id?`'${id}'`:'null'})`)
 }
