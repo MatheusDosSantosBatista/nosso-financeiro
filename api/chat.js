@@ -152,15 +152,22 @@ module.exports = async function handler(req, res) {
     const ownOrCouple = record =>
       record.ownership === 'couple' ||
       record.owner_user_id === user.id;
+    const canReadTransaction = record => {
+  if (record.owner_user_id === user.id) return true;
+
+  return (
+    record.visibility === 'shared' &&
+    (record.ownership === 'couple' ||
+     record.ownership === 'individual')
+  );
+};
 
     const safeAccounts = rows('accounts').filter(ownOrCouple);
     const safeGoals = rows('goals').filter(ownOrCouple);
 
-    const safeTransactions = rows('transactions').filter(t =>
-      !t.deleted_at &&
-      ownOrCouple(t) &&
-      (t.owner_user_id === user.id || t.visibility !== 'private')
-    );
+    const safeTransactions = rows('transactions').filter(
+  t => !t.deleted_at && canReadTransaction(t)
+);
 
     const safeDebts = rows('debts').filter(ownOrCouple);
 
