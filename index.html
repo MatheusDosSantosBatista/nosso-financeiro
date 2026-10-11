@@ -456,6 +456,23 @@ body.dark-mode .card:hover{box-shadow:0 4px 18px rgba(0,0,0,.24)}
 @media(max-width:760px){.main{padding:16px}.card{padding:16px}.grid{gap:12px}.g2,.g3,.g4{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.top{flex-wrap:wrap}.nf-dashboard-slot .card.dash-card-has-minimize{padding:16px!important}.nf-dashboard-slot .card.dash-card-has-minimize>.dash-card-content{padding-top:30px!important}.nf-project-card{padding:16px!important}}
 @media(max-width:420px){.card .row{flex-wrap:wrap}.nf-project-card .nf-goal-rollup>.row{grid-template-columns:minmax(0,1fr) auto!important}.item{flex-wrap:wrap}.item .info{flex:1 1 calc(100% - 58px)}.item>strong{margin-left:52px;max-width:calc(100% - 52px)}}
 
+
+/* Refinamento discreto: ícones sem moldura e menus compactos */
+.nf-project-card > .nf-project-header{grid-template-columns:30px minmax(0,1fr) 30px!important;gap:10px!important;min-height:32px!important;margin-bottom:12px!important}
+.nf-project-card > .nf-project-header > .thumb,
+.nf-project-symbol{width:28px!important;height:28px!important;min-width:28px!important;flex-basis:28px!important;display:grid!important;place-items:center!important;background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:0!important;font-size:21px!important;line-height:1!important;filter:saturate(.72);opacity:.8}
+.nf-project-card > .nf-project-header > .nf-project-menu{width:30px!important;height:30px!important;min-width:30px!important;align-self:start}
+.nf-project-card > .nf-project-header > .nf-project-menu > button{width:30px!important;height:30px!important;min-height:30px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;border-radius:7px!important;color:var(--muted)!important;font-size:18px!important;font-weight:500!important;line-height:1!important;opacity:.72}
+.nf-project-card > .nf-project-header > .nf-project-menu > button:hover,
+.nf-project-card > .nf-project-header > .nf-project-menu > button:focus-visible{background:var(--beige)!important;opacity:1}
+.nf-project-card > .nf-project-header > .nf-project-menu > .nf-menu-items{top:32px!important}
+.nf-project-line .nf-project-symbol{font-size:19px!important}
+/* Ícones dos projetos em outras seções, sem caixas coloridas */
+.nf-panel-projects .thumb{background:transparent!important;border:0!important;box-shadow:none!important;filter:saturate(.72);opacity:.8}
+/* Botões de menu de opções: discretos, sem perder a área clicável */
+.nf-project-menu > button{cursor:pointer}
+@media(max-width:420px){.nf-project-card > .nf-project-header{grid-template-columns:28px minmax(0,1fr) 30px!important}}
+
 </style>
 </head>
 <body>
