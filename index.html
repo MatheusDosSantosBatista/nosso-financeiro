@@ -166,7 +166,7 @@ body.dark-mode .item:nth-child(6n) .thumb{background:#1d3528;border-color:#2d594
 
 
 /* Minimizar cartões diretamente no painel */
-.dash-card-minimize{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:8px;width:30px;height:28px;display:inline-grid;place-items:center;font-size:18px;line-height:1;flex:0 0 auto;padding:0;z-index:2}
+.dash-card-minimize{position:absolute;right:12px;top:12px;border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:8px;width:30px;height:28px;display:inline-grid;place-items:center;font-size:18px;line-height:1;flex:0 0 auto;padding:0;z-index:2}
 .dash-card-minimize:hover{color:var(--navy);background:var(--beige)}
 .dash-card-collapsed-label{display:none;font-weight:700;font-size:14px;padding:2px 40px 2px 0;color:var(--ink)}
 .card.dash-card-is-collapsed{padding-top:15px;padding-bottom:15px;min-height:56px}
@@ -174,6 +174,7 @@ body.dark-mode .item:nth-child(6n) .thumb{background:#1d3528;border-color:#2d594
 .card.dash-card-is-collapsed .dash-card-collapsed-label{display:block}
 .card.dash-card-is-collapsed .dash-card-minimize{position:absolute;right:12px;top:12px}
 .card.dash-card-has-minimize{position:relative}
+.card.dash-card-has-minimize h2,.card.dash-card-has-minimize h3{padding-right:42px}
 body.dark-mode .dash-card-minimize{background:#202833;color:#e8edf3;border-color:var(--line)}
 
 </style>
