@@ -213,6 +213,27 @@ body.dark-mode .alert-overdue .alert-dot{background:#858b98}body.dark-mode .aler
 @media(max-width:1100px){.nf-slot-balance,.nf-slot-alerts{grid-column:span 6}.nf-dashboard-slot>.grid.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){.nf-dashboard-grid{grid-template-columns:minmax(0,1fr);gap:12px}.nf-dashboard-slot{grid-column:1/-1}.nf-dashboard-slot>.grid.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.nf-slot-balance>.card{min-height:0}}
 @media(max-width:410px){.nf-dashboard-slot>.grid.g4{grid-template-columns:minmax(0,1fr)}}
+
+/* Limite de altura e expansão sob demanda: visual leve, sem perder conteúdo */
+.main .card.nf-card-limited{position:relative;min-width:0;min-height:0}
+.main .card.nf-card-limited:not(.dash-card-is-collapsed) .nf-limit-content{max-height:var(--nf-card-limit,260px);overflow:hidden;position:relative}
+.main .card.nf-card-limited.nf-card-expanded .nf-limit-content{max-height:none;overflow:visible}
+.main .card.nf-card-limited:not(.nf-card-expanded):not(.dash-card-is-collapsed) .nf-limit-content.nf-is-overflowing:after{content:'';position:absolute;bottom:0;left:0;right:0;height:35px;pointer-events:none;background:linear-gradient(transparent,var(--card))}
+.main .card .nf-expand-action{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:12px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--navy);font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s}
+.main .card .nf-expand-action:hover{background:var(--beige)}
+.main .card.dash-card-is-collapsed .nf-expand-action{display:none!important}
+.nf-slot-balance .nf-card-limited{--nf-card-limit:340px}
+.nf-slot-alerts .nf-card-limited{--nf-card-limit:245px}
+.nf-slot-projects .nf-card-limited{--nf-card-limit:260px}
+.nf-slot-transactions .nf-card-limited{--nf-card-limit:260px}
+.nf-slot-partner .nf-card-limited{--nf-card-limit:210px}
+.nf-slot-organization .nf-card-limited{--nf-card-limit:240px}
+.nf-dashboard-slot .nf-dashboard-slot{min-width:0}
+.nf-dashboard-slot .card{box-shadow:0 2px 10px rgba(23,37,56,.035)}
+.nf-dashboard-grid{gap:14px}
+body.dark-mode .main .card .nf-expand-action{background:#202833;color:#e3ecf8}
+body.dark-mode .main .card .nf-expand-action:hover{background:#2b3542}
+@media(max-width:720px){.nf-dashboard-grid{gap:12px}.main .card.nf-card-limited{--nf-card-limit:250px}}
 </style>
 </head>
 <body>
@@ -255,6 +276,40 @@ function enhanceDashboardCards(){if(state.page!=='dashboard'||!state.user)return
 // Seleciona cartões dentro do conteúdo do painel, sem tocar em modais ou elementos globais.
 let mainContent=root;cards=[...mainContent.querySelectorAll('.card')].filter(c=>!c.closest('.modal'));
 let saved=dashboardMinimizedPrefs();cards.forEach((card,index)=>{if(card.dataset.dashMinReady==='1')return;card.dataset.dashMinReady='1';let key=dashboardCardKey(card,index);card.dataset.dashMinKey=key;card.classList.add('dash-card-has-minimize');let label=card.querySelector('h2')?.textContent?.trim()||card.querySelector('.metric small')?.textContent?.trim()||card.querySelector('small')?.textContent?.trim()||`Cartão ${index+1}`;let body=document.createElement('div');body.className='dash-card-content';while(card.firstChild)body.appendChild(card.firstChild);let collapsedLabel=document.createElement('div');collapsedLabel.className='dash-card-collapsed-label';collapsedLabel.textContent=label;let button=document.createElement('button');button.type='button';button.className='dash-card-minimize';button.setAttribute('aria-label',`Minimizar ${label}`);button.setAttribute('title','Minimizar cartão');button.textContent='−';button.addEventListener('click',()=>toggleDashboardCard(key));card.append(collapsedLabel,body,button);if(saved.includes(key)){card.classList.add('dash-card-is-collapsed');button.textContent='+';button.setAttribute('aria-label',`Expandir ${label}`);button.setAttribute('title','Expandir cartão')}})}
+
+function enhanceExpandableCards(){
+  if(!state.user)return;
+  const root=document.querySelector('.main');if(!root)return;
+  const cards=[...root.querySelectorAll('.card')];
+  cards.forEach((card,index)=>{
+    if(card.classList.contains('nf-card-limited'))return;
+    // Keep existing dashboard minimization control outside the height-limited area.
+    let body=card.classList.contains('dash-card-has-minimize')?card.querySelector(':scope > .dash-card-content'):null;
+    if(!body){body=document.createElement('div');body.className='nf-limit-content';while(card.firstChild)body.appendChild(card.firstChild);card.appendChild(body)}
+    else body.classList.add('nf-limit-content');
+    card.classList.add('nf-card-limited');
+    if(!card.style.getPropertyValue('--nf-card-limit')){
+      const limit=card.closest('.nf-slot-balance')?340:card.closest('.nf-slot-alerts')?245:card.closest('.nf-slot-projects')?260:card.closest('.nf-slot-transactions')?260:card.closest('.nf-slot-partner')?210:260;
+      card.style.setProperty('--nf-card-limit',limit+'px');
+    }
+    const label=card.querySelector('h2,h3,small')?.textContent?.trim()||'cartão';
+    const key='nf-expand-'+state.user.id+'-'+state.page+'-'+index+'-'+label.slice(0,40);
+    let expanded=false;try{expanded=localStorage.getItem(key)==='1'}catch(e){}
+    const button=document.createElement('button');button.type='button';button.className='nf-expand-action';button.textContent=expanded?'Ver menos ↑':'Ver mais ↓';button.setAttribute('aria-label',(expanded?'Ver menos de ':'Ver mais de ')+label);
+    card.classList.toggle('nf-card-expanded',expanded);
+    button.addEventListener('click',()=>{
+      expanded=!expanded;card.classList.toggle('nf-card-expanded',expanded);
+      button.textContent=expanded?'Ver menos ↑':'Ver mais ↓';button.setAttribute('aria-expanded',String(expanded));
+      try{localStorage.setItem(key,expanded?'1':'0')}catch(e){}
+      if(!expanded)card.scrollIntoView({block:'nearest',behavior:'smooth'});
+    });
+    card.appendChild(button);
+    const height=parseInt(getComputedStyle(card).getPropertyValue('--nf-card-limit'))||260;
+    if(body.scrollHeight>height+8){body.classList.add('nf-is-overflowing');button.hidden=false}
+    else{button.hidden=true}
+  });
+}
+
 function alertDueInfo(raw){
   if(!raw)return null;
   const m=String(raw).slice(0,10).match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return null;
@@ -307,7 +362,7 @@ async function editGoal(id){let q=await sb.from('goals').select('*').eq('id',id)
 async function submitGoalEdit(e,id){e.preventDefault();let q=await sb.from('goals').update({name:v('f_name'),ownership:v('f_ownership'),target_amount:Number(v('f_target')||0),saved_amount:Number(v('f_saved')||0),deadline:v('f_deadline')||null,notes:v('f_notes'),updated_at:new Date().toISOString()}).eq('id',id).eq('couple_id',state.coupleId);if(q.error){toast('Não foi possível atualizar: '+q.error.message);return}closeModal();toast('Objetivo atualizado');render()}
 async function relatorios(){let x=await data(),r=x.transactions.filter(t=>t.kind==='income').reduce((s,t)=>s+Number(t.amount),0),d=x.transactions.filter(t=>t.kind==='expense').reduce((s,t)=>s+Number(t.amount),0);return layout('Relatórios','Resumo dos dados que já estão no banco.')+`<div class="grid g3"><div class="card metric"><small>Receitas</small><strong>${brl(r)}</strong></div><div class="card metric"><small>Despesas</small><strong>${brl(d)}</strong></div><div class="card metric"><small>Comprometimento</small><strong>${r?(d/r*100).toFixed(1):0}%</strong></div></div><div class="section card"><div class="notice">📊 Os relatórios passam a refletir os lançamentos reais dos dois usuários conforme a base for preenchida.</div></div>`}
 function config(){return layout('Configurações','Conta, casal e conexão.')+`<div class="card"><h2>Perfil</h2><p><b>${esc(state.profile?.display_name||'Usuário')}</b><br><span class="muted">${esc(state.user?.email||'')}</span></p><div class="notice">☁️ Conectado ao Supabase. Seus dados não dependem do navegador onde o site foi aberto.</div><div class="section"><h2>Privacidade financeira</h2><p class="muted">Ao autorizar, seu parceiro poderá ver apenas o saldo total das suas contas individuais, sem ver nomes de bancos, contas ou lançamentos privados.</p><button class="btn ${state.profile?.share_balance_with_partner?'primary':''}" onclick="toggleBalanceShare()">${state.profile?.share_balance_with_partner?'✓ Saldo compartilhado — clique para revogar':'Permitir que meu parceiro veja meu saldo total'}</button></div><button class="btn danger" onclick="logout()">Sair da conta</button></div>`}async function toggleBalanceShare(){let next=!state.profile?.share_balance_with_partner;let {data,error}=await sb.from('profiles').update({share_balance_with_partner:next}).eq('id',state.user.id).select('*').single();if(error){toast('Não foi possível alterar a permissão: '+error.message);return}state.profile=data;toast(next?'Compartilhamento do saldo ativado':'Compartilhamento do saldo revogado');render()}
-async function render(){if(!state.user){document.getElementById('root').innerHTML=login();return}if(!state.coupleId){document.getElementById('root').innerHTML='<div class="login"><div class="loginbox"><h1>Quase pronto</h1><p>Seu usuário foi autenticado, mas ainda não encontramos o vínculo com o casal.</p></div></div>';return}let fn={dashboard,lancamentos,contas,dividas,projetos,objetivos,goalDetail,projectDetail,relatorios,config}[state.page]||dashboard;let content=await fn();document.getElementById('root').innerHTML=shell(content);if(state.page==='dashboard')enhanceDashboardCards()}
+async function render(){if(!state.user){document.getElementById('root').innerHTML=login();return}if(!state.coupleId){document.getElementById('root').innerHTML='<div class="login"><div class="loginbox"><h1>Quase pronto</h1><p>Seu usuário foi autenticado, mas ainda não encontramos o vínculo com o casal.</p></div></div>';return}let fn={dashboard,lancamentos,contas,dividas,projetos,objetivos,goalDetail,projectDetail,relatorios,config}[state.page]||dashboard;let content=await fn();document.getElementById('root').innerHTML=shell(content);if(state.page==='dashboard')enhanceDashboardCards();enhanceExpandableCards()}
 async function doLogin(e){e.preventDefault();let email=document.getElementById('email').value,password=document.getElementById('password').value;let m=document.getElementById('loginMsg');m.classList.remove('hidden');m.textContent='Entrando...';let {error}=await sb.auth.signInWithPassword({email,password});if(error){m.textContent=error.message;return}m.textContent='Login realizado.'}
 async function logout(){await sb.auth.signOut()}
 function go(p){state.page=p;render()}
