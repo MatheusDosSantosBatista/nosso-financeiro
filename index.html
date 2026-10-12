@@ -613,6 +613,31 @@ body.dark-mode .elo-logo,body.dark-mode .elo-welcome-icon{background:#193b2d;col
 .elo-table-wrap{overflow-x:auto;margin:12px 0}.elo-text table{width:100%;border-collapse:collapse;font-size:.94em}
 .elo-text th,.elo-text td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line,#e5e7eb)}
 .elo-text th{font-weight:700;background:rgba(100,116,139,.08)}
+
+/* Dashboard v6: cartões se encaixam verticalmente sem deixar buracos */
+.nf-dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:8px;gap:12px;align-items:start}
+.nf-dashboard-grid>.nf-dashboard-slot{grid-column:span 1;min-width:0}
+.nf-dashboard-grid>.nf-slot-metrics,.nf-dashboard-grid>.nf-slot-organization{grid-column:span 2}
+.nf-dashboard-grid>.nf-dashboard-slot>.card{min-height:0}
+.nf-ai-dashboard{display:flex;flex-direction:column;gap:14px;padding:20px!important}
+.nf-elo-mini-head{display:flex;align-items:center;gap:11px}
+.nf-elo-mini-icon{display:grid;place-items:center;width:38px;height:38px;flex-shrink:0;border-radius:12px;background:#e7f2ec;color:#28734f;font-size:21px}
+.nf-elo-mini-head h2{margin:0;font-size:17px}
+.nf-elo-mini-head p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.nf-elo-mini-messages{display:flex;flex-direction:column;gap:10px;max-height:240px;overflow-y:auto;scrollbar-width:thin;font-size:13px}
+.nf-elo-mini-intro{color:var(--muted);padding:8px 0}
+.nf-elo-mini-turn{padding:10px 12px;border-radius:12px;line-height:1.5;overflow-wrap:anywhere}
+.nf-elo-mini-user{align-self:flex-end;background:#e7eff7;max-width:88%}
+.nf-elo-mini-answer{align-self:flex-start;background:var(--bg);border:1px solid var(--line);max-width:100%;width:100%}
+.nf-elo-mini-answer p{margin:0 0 7px}.nf-elo-mini-answer p:last-child{margin-bottom:0}
+.nf-elo-mini-form{display:flex;align-items:center;gap:8px;padding:5px;border:1px solid var(--line);border-radius:12px}
+.nf-elo-mini-form:focus-within{border-color:#7ba89a}
+.nf-elo-mini-form input{flex:1;min-width:0;border:0!important;box-shadow:none!important;background:transparent!important;padding:9px 8px!important}
+.nf-elo-mini-form button{border:0;border-radius:9px;background:#26734f;color:white;width:38px;height:36px;cursor:pointer;flex-shrink:0}
+.nf-elo-mini-form button:disabled{opacity:.5;cursor:wait}
+body.dark-mode .nf-elo-mini-user{background:#253e53;color:#e7eef6}
+body.dark-mode .nf-elo-mini-icon{background:#193b2d;color:#8ad5ab}
+@media(max-width:850px){.nf-dashboard-grid{grid-template-columns:minmax(0,1fr)}.nf-dashboard-grid>.nf-dashboard-slot{grid-column:1/-1!important}}
 </style>
 </head>
 <body>
@@ -790,6 +815,43 @@ function nfDashboardAiSignals(x,isCoupleView){
  rows.sort((a,b)=>a.days-b.days);
  return rows.slice(0,3);
 }
+let nfEloMiniTurns=[];
+function nfEloMiniPaint(){
+ const el=document.getElementById('nfEloMiniMessages');if(!el)return;
+ el.innerHTML=nfEloMiniTurns.length?nfEloMiniTurns.map(m=>`<div class="nf-elo-mini-turn ${m.role==='user'?'nf-elo-mini-user':'nf-elo-mini-answer'}">${m.role==='user'?esc(m.content):nfEloFormat(m.content)}</div>`).join(''):'<div class="nf-elo-mini-intro">Como posso ajudar com suas finanças hoje?</div>';
+ el.scrollTop=el.scrollHeight;
+}
+async function nfEloMiniSend(e){
+ e.preventDefault();const input=document.getElementById('nfEloMiniInput');const question=input?.value.trim();if(!question)return;
+ const btn=document.querySelector('#nfEloMiniForm button');input.value='';input.disabled=true;if(btn)btn.disabled=true;
+ nfEloMiniTurns.push({role:'user',content:question},{role:'assistant',content:'Pensando…'});nfEloMiniPaint();
+ try{
+  const {data:{session}}=await sb.auth.getSession();if(!session?.access_token)throw new Error('Faça login novamente.');
+  const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({message:question})});
+  const result=await response.json().catch(()=>({}));if(!response.ok)throw new Error(result.error||'Não foi possível consultar o Elo.');
+  // O servidor salva as mensagens no histórico. Usamos a resposta retornada sem gravar novamente.
+  let reply=result.reply||result.response||result.answer||result.message;
+  if(typeof reply!=='string'||!reply.trim()){
+   const r=await sb.from('ai_messages').select('role,content,created_at').eq('user_id',state.user.id).order('created_at',{ascending:false}).limit(6);
+   reply=(r.data||[]).find(m=>m.role==='assistant')?.content||'Resposta recebida. Abra o chat do Elo para consultar o histórico.';
+  }
+  nfEloMiniTurns[nfEloMiniTurns.length-1]={role:'assistant',content:reply};
+ }catch(err){nfEloMiniTurns[nfEloMiniTurns.length-1]={role:'assistant',content:'Não consegui responder agora: '+err.message}}
+ finally{if(input?.isConnected){input.disabled=false;input.focus()}if(btn?.isConnected)btn.disabled=false;nfEloMiniPaint()}
+}
+function nfDashboardMasonry(){
+ const grid=document.querySelector('.nf-dashboard-grid');if(!grid)return;
+ const update=()=>{
+  const styles=getComputedStyle(grid);const row=parseFloat(styles.gridAutoRows)||8;const gap=parseFloat(styles.rowGap)||12;
+  grid.querySelectorAll(':scope > .nf-dashboard-slot').forEach(slot=>{
+   slot.style.gridRowEnd='auto';
+   const height=slot.getBoundingClientRect().height;
+   slot.style.gridRowEnd='span '+Math.max(1,Math.ceil((height+gap)/(row+gap)));
+  });
+ };
+ requestAnimationFrame(()=>{update();requestAnimationFrame(update)});
+ if(window.ResizeObserver){const ro=new ResizeObserver(()=>requestAnimationFrame(update));grid.querySelectorAll(':scope > .nf-dashboard-slot').forEach(el=>ro.observe(el));}
+}
 function nfAiDashboardOpen(e){
  if(e)e.preventDefault();
  const input=document.getElementById('nfAiDashboardCommand');
@@ -806,7 +868,7 @@ let isCoupleView=state.view==='couple';let mine=x.transactions.filter(t=>t.owner
 let aiName=(state.profile?.nickname||state.profile?.display_name||state.user?.email?.split('@')[0]||'você').split(' ')[0];
 let aiLines=aiSignals.map(s=>`<div class="nf-ai-signal"><span>${s.days<0?'Atrasado há '+Math.abs(s.days)+' dia(s)':s.days===0?'Prazo hoje':'Em '+s.days+' dia(s)'} · ${esc(s.name)}</span><strong>${brl(s.amount)}</strong></div>`).join('');
 let widgets={
-ai:`<section class="card nf-ai-dashboard section"><div class="nf-ai-dashboard-top"><div><div class="nf-ai-dashboard-eyebrow">✦ Elo · Seu parceiro de planos</div><h2>Olá, ${esc(aiName)}!</h2><p class="muted">Estou aqui para ajudar a organizar suas metas, prazos e valores.</p></div><button type="button" class="btn" onclick="go('assistente')">Abrir chat →</button></div><div class="nf-ai-dashboard-watch"><b>De olho no seu planejamento</b>${aiLines||'<p class="mini">Nenhum prazo pendente identificado para os próximos 30 dias nos registros consultados.</p>'}${aiSignals.length?'<p class="mini">Prazos identificados nos registros; confira os detalhes antes de agir.</p>':''}</div><form class="nf-ai-dashboard-command" onsubmit="nfAiDashboardOpen(event)"><label for="nfAiDashboardCommand" class="mini">O que você quer planejar?</label><div class="nf-ai-dashboard-command-row"><input id="nfAiDashboardCommand" maxlength="1000" placeholder="Ex.: Como podemos economizar para o casamento?" aria-label="Comando para o assistente"><button class="btn primary" type="submit">Conversar →</button></div></form><p class="mini">Acompanhamento atualizado ao abrir o painel. O chat pode responder quando o servidor estiver configurado; alertas automáticos ainda não estão habilitados.</p></section>`,
+ai:`<section class="card nf-ai-dashboard section"><div class="nf-elo-mini-head"><span class="nf-elo-mini-icon">✦</span><div><h2>Elo</h2><p>Uma pergunta rápida? Estou aqui.</p></div></div><div id="nfEloMiniMessages" class="nf-elo-mini-messages" role="log" aria-live="polite"><div class="nf-elo-mini-intro">Como posso ajudar com suas finanças hoje?</div></div><form id="nfEloMiniForm" class="nf-elo-mini-form" onsubmit="nfEloMiniSend(event)"><input id="nfEloMiniInput" maxlength="4000" placeholder="Pergunte ao Elo..." aria-label="Pergunte ao Elo" required><button type="submit" aria-label="Enviar pergunta" title="Enviar pergunta">➤</button></form></section>`,
 alerts:alertCenterMarkup(x.debts.filter(d=>isCoupleView?d.ownership==='couple':(d.ownership==='individual'&&d.owner_user_id===state.user.id))),
 balance:`<div class="card metric section" style="border:1px solid var(--line);background:linear-gradient(135deg,var(--card),var(--beige))"><small>${isCoupleView?'Saldo das contas compartilhadas':'Saldo das minhas contas pessoais'}</small><strong style="font-size:32px">${brl(myAccountBalance)}</strong><span class="muted">Dinheiro nas contas cadastradas, atualizado pelos lançamentos.</span><div style="margin-top:12px"><button class="btn" onclick="go('contas')">Ver minhas contas</button></div></div>`,
 metrics:`<div class="grid g4 section"><div class="card metric"><small>${isCoupleView?'Receitas compartilhadas':'Minha receita'}</small><strong class="finance-positive-value">${brl(isCoupleView?cr:mr)}</strong><span class="positive">${isCoupleView?'Casal':'Individual'}</span></div><div class="card metric"><small>${isCoupleView?'Despesas compartilhadas':'Minha despesa'}</small><strong class="finance-negative-value">${brl(isCoupleView?cd:md)}</strong><span class="negative">${isCoupleView?'Casal':'Individual'}</span></div><div class="card metric"><small>${isCoupleView?'Saldo do período (receitas − despesas)':'Saldo do período pessoal'}</small><strong class="finance-positive-value">${brl(cr-cd)}</strong><span class="muted">${isCoupleView?'Somente lançamentos compartilhados':'Somente meus lançamentos individuais'}</span></div><div class="card metric"><small>Dívidas restantes</small><strong class="finance-negative-value">${brl(debt)}</strong><span class="muted">A pagar</span></div></div>`,
@@ -1089,7 +1151,7 @@ async function nfAiSaveQuestion(event){
  nfEloShowArchive=false;await render();
  }catch(e){toast('Elo: '+e.message);if(el)el.value=content;document.getElementById('eloThinking')?.remove();if(btn?.isConnected){btn.disabled=false;btn.textContent='➤'}}
 }
-async function render(){if(!state.user){document.getElementById('root').innerHTML=login();return}if(!state.coupleId){document.getElementById('root').innerHTML='<div class="login"><div class="loginbox"><h1>Quase pronto</h1><p>Seu usuário foi autenticado, mas ainda não encontramos o vínculo com o casal.</p></div></div>';return}let fn={dashboard,lancamentos,contas,dividas,projetos,objetivos,goalDetail,projectDetail,relatorios,config,profilePage,assistente}[state.page]||dashboard;let content=await fn();document.getElementById('root').innerHTML=shell(content);if(state.page==='dashboard')enhanceDashboardCards();if(state.page==='assistente')nfEloScroll();if(state.page==='assistente'&&window.__nfAiPendingCommand){const input=document.getElementById('nfAiText');if(input){input.value=window.__nfAiPendingCommand;input.focus()}window.__nfAiPendingCommand=''}enhanceExpandableCards()}
+async function render(){if(!state.user){document.getElementById('root').innerHTML=login();return}if(!state.coupleId){document.getElementById('root').innerHTML='<div class="login"><div class="loginbox"><h1>Quase pronto</h1><p>Seu usuário foi autenticado, mas ainda não encontramos o vínculo com o casal.</p></div></div>';return}let fn={dashboard,lancamentos,contas,dividas,projetos,objetivos,goalDetail,projectDetail,relatorios,config,profilePage,assistente}[state.page]||dashboard;let content=await fn();document.getElementById('root').innerHTML=shell(content);if(state.page==='dashboard'){enhanceDashboardCards();nfEloMiniPaint();nfDashboardMasonry();}if(state.page==='assistente')nfEloScroll();if(state.page==='assistente'&&window.__nfAiPendingCommand){const input=document.getElementById('nfAiText');if(input){input.value=window.__nfAiPendingCommand;input.focus()}window.__nfAiPendingCommand=''}enhanceExpandableCards()}
 async function doLogin(e){e.preventDefault();let email=document.getElementById('email').value,password=document.getElementById('password').value;let m=document.getElementById('loginMsg');m.classList.remove('hidden');m.textContent='Entrando...';let {error}=await sb.auth.signInWithPassword({email,password});if(error){m.textContent=error.message;return}m.textContent='Login realizado.'}
 async function logout(){await sb.auth.signOut()}
 function go(p){state.page=p;if(p==='projetos'||p==='dashboard')state.projectOrigin=null;render()}
