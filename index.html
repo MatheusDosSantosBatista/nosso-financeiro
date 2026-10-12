@@ -567,6 +567,27 @@ body.dark-mode .nf-elo-mark{background:#193b2d;color:#8ad5ab}
 /* Dashboard v7: indicadores independentes preenchem a coluna mais curta. */
 .nf-dashboard-grid>.nf-slot-metric-single{grid-column:auto}
 .nf-dashboard-grid>.nf-slot-metric-single>.card{height:100%;min-height:0}
+
+/* V10: indicadores financeiros alinhados e acabamento uniforme */
+.nf-dashboard-grid>.nf-slot-metrics{grid-column:1/-1}
+.nf-slot-metrics>.grid.g4{
+ display:grid!important;
+ grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ gap:12px!important;
+ margin:0!important;
+}
+.nf-slot-metrics>.grid.g4>.card{min-width:0;min-height:145px;height:100%;box-sizing:border-box}
+.nf-dashboard-grid .nf-dashboard-slot>.card,
+.nf-dashboard-grid .nf-dashboard-slot .card,
+.nf-dashboard-grid .alert-center{
+ border-top:1px solid var(--line)!important;
+ background:var(--card)!important;
+}
+.nf-dashboard-grid .nf-dashboard-slot>.card{box-shadow:0 4px 16px rgba(26,46,65,.035)}
+@media(max-width:720px){
+ .nf-slot-metrics>.grid.g4{grid-template-columns:1fr!important}
+ .nf-slot-metrics>.grid.g4>.card{min-height:0}
+}
 </style>
 <style>
 .nf-ai-dashboard{display:grid;gap:16px;border:1px solid var(--line)}
@@ -846,20 +867,8 @@ async function nfEloMiniSend(e){
 }
 function nfDashboardMasonry(){
  const grid=document.querySelector('.nf-dashboard-grid');if(!grid)return;
- // Cada indicador financeiro vira um cartão independente, capaz de ocupar
- // espaços livres ao lado de cartões maiores.
- const metrics=grid.querySelector(':scope > .nf-slot-metrics');
- if(metrics){
-  const cards=[...metrics.querySelectorAll(':scope > .grid > .card')];
-  cards.forEach((card,i)=>{
-   const slot=document.createElement('div');
-   slot.className='nf-dashboard-slot nf-slot-metric-single';
-   slot.dataset.metricIndex=String(i);
-   slot.appendChild(card);
-   grid.insertBefore(slot,metrics);
-  });
-  if(cards.length)metrics.remove();
- }
+ // Mantém Receita, Despesa e Dívidas na mesma faixa, lado a lado.
+ // Os demais cartões continuam com distribuição dinâmica.
  let pending=false;
  const update=()=>{
   pending=false;
@@ -874,7 +883,7 @@ function nfDashboardMasonry(){
   slots.forEach(slot=>{
    const height=slot.getBoundingClientRect().height;
    const span=Math.max(1,Math.ceil((height+gap)/(row+gap)));
-   const full=oneColumn||slot.classList.contains('nf-slot-organization');
+   const full=oneColumn||slot.classList.contains('nf-slot-organization')||slot.classList.contains('nf-slot-metrics');
    const col=full?0:(occupied[0]<=occupied[1]?0:1);
    const start=full?Math.max(...occupied):occupied[col];
    slot.style.gridColumn=full?'1 / -1':String(col+1);
