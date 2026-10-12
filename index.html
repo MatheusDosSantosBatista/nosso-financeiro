@@ -562,6 +562,10 @@ body.dark-mode .nf-elo-mark{background:#193b2d;color:#8ad5ab}
 .nf-dashboard-slot>.grid.g2{grid-template-columns:minmax(0,1fr)}
 @media(max-width:850px){.nf-dashboard-grid{grid-template-columns:minmax(0,1fr)}.nf-dashboard-slot,.nf-slot-balance,.nf-slot-alerts,.nf-slot-metrics,.nf-slot-organization{grid-column:1/-1}}
 
+
+/* Dashboard v7: indicadores independentes preenchem a coluna mais curta. */
+.nf-dashboard-grid>.nf-slot-metric-single{grid-column:auto}
+.nf-dashboard-grid>.nf-slot-metric-single>.card{height:100%;min-height:0}
 </style>
 <style>
 .nf-ai-dashboard{display:grid;gap:16px;border:1px solid var(--line)}
@@ -841,17 +845,57 @@ async function nfEloMiniSend(e){
 }
 function nfDashboardMasonry(){
  const grid=document.querySelector('.nf-dashboard-grid');if(!grid)return;
+ // Cada indicador financeiro vira um cartão independente, capaz de ocupar
+ // espaços livres ao lado de cartões maiores.
+ const metrics=grid.querySelector(':scope > .nf-slot-metrics');
+ if(metrics){
+  const cards=[...metrics.querySelectorAll(':scope > .grid > .card')];
+  cards.forEach((card,i)=>{
+   const slot=document.createElement('div');
+   slot.className='nf-dashboard-slot nf-slot-metric-single';
+   slot.dataset.metricIndex=String(i);
+   slot.appendChild(card);
+   grid.insertBefore(slot,metrics);
+  });
+  if(cards.length)metrics.remove();
+ }
+ let pending=false;
  const update=()=>{
-  const styles=getComputedStyle(grid);const row=parseFloat(styles.gridAutoRows)||8;const gap=parseFloat(styles.rowGap)||12;
-  grid.querySelectorAll(':scope > .nf-dashboard-slot').forEach(slot=>{
-   slot.style.gridRowEnd='auto';
+  pending=false;
+  if(!grid.isConnected)return;
+  const slots=[...grid.children].filter(el=>el.classList.contains('nf-dashboard-slot'));
+  const oneColumn=window.matchMedia('(max-width:850px)').matches;
+  const cs=getComputedStyle(grid),row=parseFloat(cs.gridAutoRows)||8,gap=parseFloat(cs.rowGap)||12;
+  const occupied=[1,1];
+  slots.forEach(slot=>{
+   slot.style.gridRow='auto';slot.style.gridColumn='auto';
+  });
+  slots.forEach(slot=>{
    const height=slot.getBoundingClientRect().height;
-   slot.style.gridRowEnd='span '+Math.max(1,Math.ceil((height+gap)/(row+gap)));
+   const span=Math.max(1,Math.ceil((height+gap)/(row+gap)));
+   const full=oneColumn||slot.classList.contains('nf-slot-organization');
+   const col=full?0:(occupied[0]<=occupied[1]?0:1);
+   const start=full?Math.max(...occupied):occupied[col];
+   slot.style.gridColumn=full?'1 / -1':String(col+1);
+   slot.style.gridRow=String(start)+' / span '+span;
+   if(full){occupied[0]=start+span;occupied[1]=start+span}
+   else occupied[col]=start+span;
   });
  };
- requestAnimationFrame(()=>{update();requestAnimationFrame(update)});
- if(window.ResizeObserver){const ro=new ResizeObserver(()=>requestAnimationFrame(update));grid.querySelectorAll(':scope > .nf-dashboard-slot').forEach(el=>ro.observe(el));}
+ const schedule=()=>{if(!pending){pending=true;requestAnimationFrame(update)}};
+ schedule();
+ if(window.ResizeObserver){
+  const ro=new ResizeObserver(schedule);
+  [...grid.children].filter(el=>el.classList.contains('nf-dashboard-slot')).forEach(el=>ro.observe(el));
+  // A grade é recriada quando se troca de página, mas desconectamos o observer anterior.
+  if(window.__nfMasonryObserver)window.__nfMasonryObserver.disconnect();
+  window.__nfMasonryObserver=ro;
+ }
+ if(window.__nfMasonryResize)window.removeEventListener('resize',window.__nfMasonryResize);
+ window.__nfMasonryResize=schedule;
+ window.addEventListener('resize',schedule);
 }
+
 function nfAiDashboardOpen(e){
  if(e)e.preventDefault();
  const input=document.getElementById('nfAiDashboardCommand');
