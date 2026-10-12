@@ -594,7 +594,7 @@ body.dark-mode .nf-elo-mark{background:#193b2d;color:#8ad5ab}
 .side .nf-brand-logo:before,.side .nf-brand-logo:after{content:none!important;display:none!important}
 .nf-logo-upper{font-size:11px;font-weight:500;letter-spacing:5px;color:#817a75;margin-bottom:1px}
 .nf-logo-main{display:flex;align-items:center;white-space:nowrap;font-size:25px;letter-spacing:-1.15px;font-weight:850;color:#102d43}
-.nf-logo-rings{height:31px;width:36px;flex-shrink:0;margin-left:-1px;overflow:visible;color:#102d43}
+.nf-logo-rings{height:34px;width:39px;flex-shrink:0;margin-left:-1px;overflow:visible;color:#102d43}
 .nf-logo-slogan{display:block;max-width:205px;margin-top:7px;font-size:10px;line-height:1.4;font-weight:500;letter-spacing:0;color:#827b77}
 .nf-brand-logo:hover .nf-logo-main{opacity:.85}
 .nf-brand-logo:focus-visible{outline:2px solid #3b82b8;outline-offset:2px;border-radius:8px}
@@ -606,7 +606,7 @@ body.dark-mode .nf-logo-upper,body.dark-mode .nf-logo-slogan{color:#c8bcb1}
 .nf-login-brand{display:flex;flex-direction:column;align-items:center;text-align:center;margin:4px auto 20px}
 .nf-login-brand .nf-logo-upper{font-size:15px;letter-spacing:7px;margin-bottom:5px}
 .nf-login-brand .nf-logo-main{font-size:clamp(30px,8vw,40px);letter-spacing:-1.7px;justify-content:center}
-.nf-login-brand .nf-logo-rings{width:53px;height:49px;margin-left:-2px}
+.nf-login-brand .nf-logo-rings{width:55px;height:50px;margin-left:-2px}
 .nf-login-brand .nf-logo-slogan{max-width:340px;font-size:12px;margin-top:12px;line-height:1.45}
 body.dark-mode .nf-login-brand .nf-logo-main{color:#f6f6f3}
 @media(max-width:440px){.loginbox{padding:23px}.nf-login-brand .nf-logo-main{font-size:30px}.nf-login-brand .nf-logo-rings{width:41px;height:38px}}
@@ -742,7 +742,31 @@ function nfConfirmCrop(){if(!nfCropState)return;const canvas=document.getElement
 
 async function loadPartnerProfile(){try{const m=await sb.from('couple_members').select('user_id').eq('couple_id',state.coupleId).neq('user_id',state.user.id).limit(1);if(m.error||!m.data?.length)return null;const r=await sb.from('profiles').select('id,display_name,nickname,avatar_url').eq('id',m.data[0].user_id).maybeSingle();return r.error?null:r.data}catch(e){return null}}
 function nfLogoMarkup(){return `<span class="nf-logo-upper">NOSSO</span>
-<span class="nf-logo-main"><span>Financeir</span><svg class="nf-logo-rings" viewBox="0 0 58 53" aria-hidden="true" focusable="false"><defs><linearGradient id="nfGold" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fbe8ae"/><stop offset=".43" stop-color="#c18a32"/><stop offset=".7" stop-color="#f5d58b"/><stop offset="1" stop-color="#9d6a24"/></linearGradient></defs><circle cx="22" cy="30" r="16" fill="none" stroke="currentColor" stroke-width="8"/><circle cx="38" cy="30" r="16" fill="none" stroke="url(#nfGold)" stroke-width="8"/><path d="M36 10 L42 3 L49 10 L42 18 Z" fill="#f8fafc" stroke="#c6a268" stroke-width="1.2"/><path d="M36 10 H49 M42 3 L42 18 M36 10 L42 18 L49 10" stroke="#a4bfd0" stroke-width=".7" fill="none"/></svg></span>
+<span class="nf-logo-main"><span>Financeir</span><svg class="nf-logo-rings" viewBox="0 0 62 55" aria-hidden="true" focusable="false">
+<defs>
+ <linearGradient id="nfGold" x1="0%" y1="10%" x2="100%" y2="90%">
+  <stop offset="0%" stop-color="#fff1c8"/><stop offset="24%" stop-color="#e9ba6d"/>
+  <stop offset="50%" stop-color="#b77b32"/><stop offset="76%" stop-color="#f6d99b"/>
+  <stop offset="100%" stop-color="#b17a35"/>
+ </linearGradient>
+ <linearGradient id="nfDiamond" x1="0%" y1="0%" x2="100%" y2="100%">
+  <stop offset="0%" stop-color="#ffffff"/><stop offset="48%" stop-color="#e5f3fc"/>
+  <stop offset="100%" stop-color="#a8c2d5"/>
+ </linearGradient>
+</defs>
+<!-- O azul é a letra final, alinhada às demais letras -->
+<circle cx="23" cy="33" r="15.7" fill="none" stroke="currentColor" stroke-width="7.5"/>
+<!-- Aliança dourada passando por trás e pela frente da letra O -->
+<circle cx="40" cy="33" r="15.7" fill="none" stroke="url(#nfGold)" stroke-width="7.5"/>
+<!-- O azul passa por cima da parte inferior da aliança -->
+<path d="M 29.8 47.1 A 15.7 15.7 0 0 0 37.2 40.2" fill="none" stroke="currentColor" stroke-width="7.5" stroke-linecap="round"/>
+<!-- A aliança dourada passa por cima da parte superior do O -->
+<path d="M 25.4 27.4 A 15.7 15.7 0 0 1 34.5 18.4" fill="none" stroke="url(#nfGold)" stroke-width="7.5" stroke-linecap="round"/>
+<!-- Diamante um pouco maior, com base sobre a aliança dourada -->
+<path d="M32.2 10.8 L37.2 4.1 L45.2 4.1 L50.2 10.8 L41.2 22.1 Z" fill="url(#nfDiamond)" stroke="#c49a5a" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M32.2 10.8 H50.2 M37.2 4.1 L41.2 10.8 L45.2 4.1 M37.2 4.1 L41.2 22.1 L45.2 4.1 M32.2 10.8 L41.2 22.1 L50.2 10.8" fill="none" stroke="#9eb7ca" stroke-width=".8"/>
+<path d="M36.5 7.2 L38.2 5.2" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>
+</svg></span>
 <span class="nf-logo-slogan">Planejando hoje, construindo o nosso amanhã.</span>
 `}
 function shell(content){let name=state.profile?.display_name||state.user?.email?.split('@')[0]||'Você';return `<div class="app"><aside class="side"><button type="button" class="brand nf-brand-logo" onclick="go('dashboard')" aria-label="Nosso Financeiro — ir para Home" title="Ir para Home">
