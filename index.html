@@ -894,6 +894,18 @@ body.dark-mode .nf-elo-mini-icon{background:#193b2d;color:#8ad5ab}
  .nf-home-toolbar .switch button{padding:8px 12px!important}
 }
 @media(max-width:850px){.nf-home-head-controls{display:flex;flex-wrap:wrap;gap:8px;width:100%}.nf-home-head-controls>.row{margin:0!important}.nf-home-head-controls .actions{display:flex;gap:6px}.nf-home-head-controls .actions .btn{flex:1 1 auto;font-size:12px;padding:7px 9px}.nf-home-head>.title p{display:none}}
+
+/* Inicialização discreta: identidade visual enquanto a sessão é verificada */
+.nf-startup{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:28px;background:var(--bg);color:var(--ink)}
+.nf-startup-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;width:min(360px,100%)}
+.nf-startup-icon{width:106px;height:106px;object-fit:contain;border-radius:24px;animation:nf-startup-breathe 2.2s ease-in-out infinite}
+.nf-startup-name{font-size:22px;font-weight:800;letter-spacing:-.6px;color:var(--ink)}
+.nf-startup-caption{font-size:13px;color:var(--muted);line-height:1.5}
+.nf-startup-spinner{width:24px;height:24px;margin-top:10px;border:2.5px solid var(--line);border-top-color:#3978b8;border-radius:50%;animation:nf-startup-spin .8s linear infinite}
+.nf-startup-error{margin-top:12px;padding:14px;border:1px solid var(--line);background:var(--card);border-radius:12px;font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+@keyframes nf-startup-spin{to{transform:rotate(360deg)}}
+@keyframes nf-startup-breathe{50%{transform:scale(1.045);opacity:.85}}
+@media(prefers-reduced-motion:reduce){.nf-startup-icon,.nf-startup-spinner{animation:none}}
 </style>
 </head>
 <body>
@@ -909,7 +921,36 @@ const brl=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).fo
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const toast=(m)=>{let e=document.createElement('div');e.className='toast';e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),2600)};
 function diag(msg,ok=false){let r=document.getElementById('diag');if(!r)return;let d=document.createElement('div');d.className='status';d.style.marginTop='8px';d.style.background=ok?'#e5f5ec':'#fdecea';d.innerHTML=(ok?'✅ ':'❌ ')+esc(msg);r.appendChild(d)}
-async function init(){document.getElementById('root').innerHTML='<div class="login"><div class="loginbox"><h1>Nosso Financeiro</h1><p>Diagnóstico de conexão</p><div id="diag"></div></div></div>';try{if(!window.supabase||typeof window.supabase.createClient!=='function')throw new Error('Biblioteca Supabase não carregou');diag('Biblioteca Supabase carregada',true);let res=await fetch(SUPABASE_URL+'/auth/v1/settings',{method:'GET',headers:{'apikey':SUPABASE_KEY}});diag('Endpoint Supabase respondeu: HTTP '+res.status,res.ok||res.status===400||res.status===401);let body='';try{body=await res.text()}catch(_){}if(!res.ok)throw new Error('Endpoint auth/v1/settings retornou HTTP '+res.status+(body?' — '+body.slice(0,300):''));const {data:{session},error}=await sb.auth.getSession();if(error)throw new Error('Auth getSession: '+error.message);diag('Auth getSession funcionando',true);state.user=session?.user||null;if(state.user){diag('Sessão encontrada: '+state.user.email,true);await loadContext();}else diag('Nenhuma sessão ativa. Isso é normal antes do login.',true);await render();sb.auth.onAuthStateChange(async(_e,s)=>{state.user=s?.user||null;if(state.user) await loadContext();else {state.profile=null;state.coupleId=null}await render()});}catch(e){console.error('DIAGNÓSTICO',e);diag('FALHA: '+(e?.message||String(e)),false);}}
+function nfStartupScreen(message='Preparando seu espaço financeiro...',error=false){
+ const root=document.getElementById('root');
+ if(!root)return;
+ root.innerHTML=`<div class="nf-startup" role="status" aria-live="polite"><div class="nf-startup-inner"><img class="nf-startup-icon" src="/apple-touch-icon.png" alt="Alianças do Nosso Financeiro"><div class="nf-startup-name">Nosso Financeiro</div><div class="nf-startup-caption">${esc(message)}</div>${error?'<div class="nf-startup-error">Não foi possível concluir a conexão. Verifique sua internet e tente novamente.</div><button class="btn primary" type="button" onclick="init()">Tentar novamente</button>':'<div class="nf-startup-spinner" aria-hidden="true"></div>'}</div></div>`;
+}
+async function init(){
+ nfStartupScreen();
+ try{
+  if(!window.supabase||typeof window.supabase.createClient!=='function')throw new Error('Biblioteca Supabase não carregou');
+  const res=await fetch(SUPABASE_URL+'/auth/v1/settings',{method:'GET',headers:{'apikey':SUPABASE_KEY}});
+  if(!res.ok)throw new Error('Endpoint auth/v1/settings retornou HTTP '+res.status);
+  const {data:{session},error}=await sb.auth.getSession();
+  if(error)throw new Error('Auth getSession: '+error.message);
+  state.user=session?.user||null;
+  if(state.user)await loadContext();
+  await render();
+  if(!window.__nfAuthListenerAttached){
+   window.__nfAuthListenerAttached=true;
+   sb.auth.onAuthStateChange(async(_e,s)=>{
+    state.user=s?.user||null;
+    if(state.user)await loadContext();
+    else{state.profile=null;state.coupleId=null}
+    await render();
+   });
+  }
+ }catch(e){
+  console.error('Erro na inicialização do Nosso Financeiro:',e);
+  nfStartupScreen('Não foi possível carregar o sistema.',true);
+ }
+}
 async function setupRealtime(){if(!state.coupleId)return;if(state.realtime){try{await sb.removeChannel(state.realtime)}catch(e){}}state.realtime=sb.channel('nosso-financeiro-'+state.coupleId).on('postgres_changes',{event:'*',schema:'public',table:'transactions',filter:'couple_id=eq.'+state.coupleId},()=>render()).on('postgres_changes',{event:'*',schema:'public',table:'accounts',filter:'couple_id=eq.'+state.coupleId},()=>render()).on('postgres_changes',{event:'*',schema:'public',table:'debts',filter:'couple_id=eq.'+state.coupleId},()=>render()).on('postgres_changes',{event:'*',schema:'public',table:'projects',filter:'couple_id=eq.'+state.coupleId},()=>render()).on('postgres_changes',{event:'*',schema:'public',table:'goals',filter:'couple_id=eq.'+state.coupleId},()=>render()).on('postgres_changes',{event:'*',schema:'public',table:'goal_items',filter:'couple_id=eq.'+state.coupleId},()=>render()).on('postgres_changes',{event:'*',schema:'public',table:'project_items',filter:'couple_id=eq.'+state.coupleId},()=>render()).on('postgres_changes',{event:'*',schema:'public',table:'project_payments',filter:'couple_id=eq.'+state.coupleId},()=>render()).subscribe();}
 async function loadContext(){let r=await sb.from('profiles').select('*').eq('id',state.user.id).maybeSingle();if(r.error)throw new Error('Tabela profiles: '+r.error.message+' (HTTP '+(r.status||'?')+')');state.profile=r.data;diag('Tabela profiles acessível',true);let {data:cm,error,status}=await sb.from('couple_members').select('couple_id,role').eq('user_id',state.user.id).maybeSingle();if(error)throw new Error('Tabela couple_members: '+error.message+' (HTTP '+(status||'?')+')');state.coupleId=cm?.couple_id||null;diag(state.coupleId?'Vínculo com o casal encontrado':'Usuário sem vínculo com casal',!!state.coupleId);if(state.coupleId){await ensureProjects();await setupRealtime();}}
 async function ensureProjects(){let {count}=await sb.from('projects').select('*',{count:'exact',head:true}).eq('couple_id',state.coupleId);if(count===0){await sb.from('projects').insert([{couple_id:state.coupleId,name:'Casamento',emoji:'💍',target_amount:60000,saved_amount:0},{couple_id:state.coupleId,name:'Casa',emoji:'🏠',target_amount:0,saved_amount:0},{couple_id:state.coupleId,name:'Carro',emoji:'🚗',target_amount:0,saved_amount:0},{couple_id:state.coupleId,name:'Viagem',emoji:'✈️',target_amount:0,saved_amount:0},{couple_id:state.coupleId,name:'Filho',emoji:'👶',target_amount:0,saved_amount:0}]);}}
