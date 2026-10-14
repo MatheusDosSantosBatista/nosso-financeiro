@@ -864,6 +864,39 @@ body.nf-values-hidden .nf-money-value::after{content:'••••••';font-s
 body.dark-mode .nf-header-tools .nf-header-icon,body.dark-mode .nf-header-tools .nf-privacy-toggle{color:#b7c3d2!important}
 body.dark-mode .nf-header-tools .nf-header-icon:hover,body.dark-mode .nf-header-tools .nf-privacy-toggle:hover{background:#202833!important;color:#fff!important}
 @media(max-width:600px){.app>.main>.top>.authbar.nf-header-tools{gap:3px}.nf-header-tools .nf-header-logout{font-size:10px;margin-right:2px}.nf-header-tools .nf-header-icon,.nf-header-tools .nf-privacy-toggle{width:32px;height:32px;min-width:32px;min-height:32px;flex-basis:32px}.nf-header-tools .nf-header-profile{margin-left:1px}.nf-header-tools .nf-header-profile .avatar,.nf-header-tools .nf-header-profile .nf-avatar-photo{width:34px!important;height:34px!important;min-width:34px}}
+
+/* Pop-up unificado de movimentações — mantém os formulários e a lógica existentes */
+.nf-money-modal{padding:14px;align-items:center}
+.nf-money-modal .modalbox{width:min(610px,100%);max-height:min(92dvh,900px);border-radius:20px;overflow-y:auto;overscroll-behavior:contain;box-shadow:0 24px 70px rgba(0,0,0,.25)}
+.nf-money-modal .modalhead{padding:21px 24px 12px;border:0}
+.nf-money-modal .modalhead h2{font-size:19px;letter-spacing:-.4px}
+.nf-transaction-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:0 24px 14px;padding:4px;border-radius:11px;background:var(--beige)}
+.nf-transaction-tabs button{border:0;border-radius:8px;background:transparent;color:var(--ink);font-size:13px;font-weight:700;min-height:39px;padding:8px 3px}
+.nf-transaction-tabs .active{color:#fff;background:#138c67}
+.nf-transaction-tabs .nf-tab-expense.active{background:#cf2750}
+.nf-transaction-tabs .nf-tab-income.active{background:#0cae75}
+.nf-transaction-tabs .nf-tab-transfer.active{background:#15966d}
+.nf-money-modal .modalbox>form{padding:0 24px 22px;gap:12px}
+.nf-money-modal .nf-form-panel{padding:17px;border:1px solid var(--line);border-radius:16px;background:var(--bg);gap:12px}
+.nf-money-modal .nf-money-top{display:flex;flex-direction:column;gap:10px}
+.nf-money-modal .nf-money-top label{display:grid;gap:6px}
+.nf-money-modal .nf-money-top #f_desc{font-size:15px;font-weight:500;border:0;border-bottom:1px solid var(--line);background:transparent;padding:8px 2px 12px}
+.nf-money-modal .nf-money-top #f_amount{font-size:34px;font-weight:800;max-width:100%;padding:8px 2px;border:0;background:transparent;box-shadow:none}
+.nf-money-modal .nf-money-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.nf-money-modal .nf-form-section-title{grid-column:1/-1;font-size:10px;letter-spacing:.09em;color:var(--muted);font-weight:750}
+.nf-money-modal .nf-money-fields label{font-size:12px}
+.nf-money-modal .nf-money-fields input,.nf-money-modal .nf-money-fields select,.nf-money-modal .nf-money-fields textarea{background:var(--card)}
+.nf-money-modal .nf-quick-dates{margin:0 3px}
+.nf-money-modal details{border:1px solid var(--line);padding:14px 16px}
+.nf-money-modal .nf-transaction-footer{position:sticky;bottom:-22px;z-index:2;margin-top:5px;padding:14px 0 0;background:var(--card);display:grid;grid-template-columns:1fr 2fr;gap:9px}
+.nf-money-modal .nf-transaction-footer .btn{width:100%;min-width:0}
+.nf-money-modal .nf-transaction-footer .primary{background:#12895f!important;border-color:#12895f!important;color:#fff!important}
+.nf-money-modal.nf-money-expense .nf-transaction-footer .primary{background:#c93553!important;border-color:#c93553!important}
+.nf-money-modal .nf-transfer-notice{font-size:12px;line-height:1.5;margin:0}
+body.dark-mode .nf-money-modal .nf-form-panel{background:#171d27;border-color:var(--line)}
+body.dark-mode .nf-transaction-tabs{background:#282f3c}
+@media(max-width:640px){.nf-money-modal{padding:0;align-items:stretch}.nf-money-modal .modalbox{width:100%;max-height:100dvh;min-height:100dvh;border-radius:0}.nf-money-modal .modalhead{padding:17px 16px 12px}.nf-transaction-tabs{margin:0 16px 14px}.nf-money-modal .modalbox>form{padding:0 16px 20px}.nf-money-modal .nf-money-fields{grid-template-columns:minmax(0,1fr)}.nf-money-modal .nf-transaction-footer{bottom:-20px}}
+
 </style>
 <style>
 .nf-ai-dashboard{display:grid;gap:16px;border:1px solid var(--line)}
@@ -1752,7 +1785,35 @@ function ownField(){return `<label>Natureza<select id="f_ownership"><option valu
 function accountOptions(){let {accounts=[]}=window.__nfdata||{};return accounts.filter(a=>a.ownership==='couple'||a.owner_user_id===state.user.id).map(a=>`<option value="${a.id}">${esc(a.name)} · ${brl(a.current_balance)}</option>`).join('')}async function loadPartnerTransferAccounts(){let sel=document.getElementById('f_to');if(!sel)return;try{let r=await sb.rpc('partner_transfer_accounts');if(r.error){console.warn(r.error);return}for(let a of (r.data||[])){if(![...sel.options].some(o=>o.value===a.account_id)){let op=document.createElement('option');op.value=a.account_id;op.textContent=a.account_name+' · conta da(o) parceira(o)';sel.appendChild(op)}}}catch(e){console.warn(e)}}
 
 function nfQuickDate(offset){const el=document.getElementById('f_datetime');if(!el)return;let d=new Date();d.setDate(d.getDate()+offset);el.value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
-function nfMoneyStyle(type){let el=document.querySelector('#modalRoot .modal');if(el){el.classList.add('nf-money-modal','nf-money-'+type);let btn=el.querySelector('form>.actions .primary');if(btn)btn.textContent=type==='income'?'Salvar receita':type==='expense'?'Salvar despesa':'Confirmar transferência'}}
+function nfTransactionTabs(active){
+ const labels=[['expense','Despesa'],['income','Receita'],['transfer','Transferir']];
+ return '<div class="nf-transaction-tabs" role="tablist" aria-label="Tipo de transação">'+labels.map(([type,label])=>'<button type="button" role="tab" aria-selected="'+(active===type)+'" class="nf-tab nf-tab-'+type+(active===type?' active':'')+'" onclick="nfSwitchTransaction(\''+type+'\')">'+label+'</button>').join('')+'</div>';
+}
+function nfSwitchTransaction(type){
+ const form=document.querySelector('#modalRoot .nf-money-modal form');
+ const filled=form&&Array.from(form.querySelectorAll('input,select,textarea')).some(el=>el.id==='f_desc'&&el.value.trim()||el.id==='f_amount'&&Number(el.value)>0);
+ if(filled&&!confirm('Trocar de operação? Os campos preenchidos nesta janela serão descartados.'))return;
+ openForm(type);
+}
+function nfDecorateTransaction(type){
+ const box=document.querySelector('#modalRoot .nf-money-modal .modalbox');if(!box)return;
+ const head=box.querySelector('.modalhead');if(head){const h=head.querySelector('h2');if(h)h.textContent='Registrar transação';head.insertAdjacentHTML('afterend',nfTransactionTabs(type));}
+ const form=box.querySelector('form');if(!form)return;
+ if(type==='transfer'){
+  const grid=form.querySelector('.formgrid');if(grid){
+   const desc=grid.querySelector('#f_desc')?.closest('label');const amount=grid.querySelector('#f_amount')?.closest('label');
+   if(desc&&amount){const wrap=document.createElement('div');wrap.className='nf-money-top';grid.before(wrap);wrap.append(desc,amount);}
+   grid.classList.add('nf-money-fields');
+   const note=form.querySelector('.notice');if(note){note.classList.add('nf-transfer-notice');grid.after(note);}
+  }
+ }
+ const top=form.querySelector('.nf-money-top');if(top){top.classList.add('nf-form-panel');}
+ const fields=form.querySelector('.nf-money-fields');if(fields){fields.classList.add('nf-form-panel');fields.insertAdjacentHTML('afterbegin','<div class="nf-form-section-title">DADOS DA TRANSAÇÃO</div>');}
+ const detail=form.querySelector('details');if(detail){detail.classList.add('nf-form-panel');}
+ const actions=form.querySelector(':scope > .actions');if(actions){actions.classList.add('nf-transaction-footer');const save=actions.querySelector('.primary');if(save)save.textContent=type==='income'?'Registrar receita':type==='expense'?'Registrar despesa':'Registrar transferência';}
+ const amount=form.querySelector('#f_amount');if(amount){amount.setAttribute('inputmode','decimal');}
+}
+function nfMoneyStyle(type){let el=document.querySelector('#modalRoot .modal');if(el){el.classList.add('nf-money-modal','nf-money-'+type);let btn=el.querySelector('form>.actions .primary');if(btn)btn.textContent=type==='income'?'Registrar receita':type==='expense'?'Registrar despesa':'Registrar transferência';nfDecorateTransaction(type)}}
 function openForm(type){if(type==='income'||type==='expense'){
 let ac=accountOptions(),income=type==='income',now=new Date(),local=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
 let cats=income?['Salário','Serviço/freelance','Comissão','Benefício','Rendimento de investimento','Reembolso recebido','Cashback','Presente','Prêmios','Outros']:['Alimentação','Moradia','Transporte','Saúde','Educação','Lazer','Compras pessoais','Casamento','Investimentos/reserva','Outros'];
