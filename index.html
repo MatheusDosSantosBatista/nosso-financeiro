@@ -934,6 +934,11 @@ body.dark-mode .nf-transaction-tabs{background:#282f3c}
 .nf-generic-money{grid-column:1/-1}
 .nf-project-symbol svg,.nf-project-card .thumb svg{width:30px;height:30px;display:block;margin:auto}
 .nf-project-symbol,.nf-project-card .thumb{display:grid;place-items:center}
+
+.nf-cat-icon-sectors{display:flex;flex-wrap:wrap;gap:7px;max-height:124px;overflow-y:auto;margin:10px 0;padding:2px}
+.nf-icon-sector{border:1px solid var(--border,#334155);background:transparent;color:inherit;border-radius:20px;padding:7px 11px;font-size:12px;cursor:pointer}
+.nf-icon-sector.selected{background:#2563eb;color:white;border-color:#2563eb}
+.nf-cat-icon-grid{max-height:230px;overflow:auto}
 </style>
 <style>
 .nf-ai-dashboard{display:grid;gap:16px;border:1px solid var(--line)}
@@ -1881,7 +1886,29 @@ const nfIncomeDefaults=[
 ];
 let nfIncomeDigits='',nfIncomeCategory=null,nfIncomeExpanded='',nfIncomeSort='az';
 function nfIncomeKey(s){return 'nf_income_'+s+'_'+(state.user?.id||'guest')}
+let nfSharedCatLoadedFor='',nfSharedCatSaveTimer=null,nfSharedCatSaving=false;
 function nfIncomeStored(){try{return JSON.parse(localStorage.getItem(nfIncomeKey('categories')))||[]}catch(e){return []}}
+async function nfLoadSharedCategories(){
+ if(!state.user?.id||!state.coupleId)return;
+ const key=String(state.coupleId);if(nfSharedCatLoadedFor===key)return;
+ const {data,error}=await sb.from('nf_shared_categories').select('categories').eq('couple_id',state.coupleId).maybeSingle();
+ if(error){console.warn('Sincronização de categorias não disponível:',error.message);return}
+ nfSharedCatLoadedFor=key;
+ if(data&&Array.isArray(data.categories)){
+  localStorage.setItem(nfIncomeKey('categories'),JSON.stringify(data.categories));
+ }else{
+  let old=nfIncomeStored();if(old.length)await nfSaveSharedCategories(old);
+ }
+ if(document.getElementById('nf_income_cat_list'))nfIncomeDrawCategories();
+}
+async function nfSaveSharedCategories(categories){
+ if(!state.user?.id||!state.coupleId)return false;
+ const {error}=await sb.from('nf_shared_categories').upsert({couple_id:state.coupleId,categories,updated_by:state.user.id,updated_at:new Date().toISOString()},{onConflict:'couple_id'});
+ if(error){console.warn('Não foi possível sincronizar categorias:',error.message);toast('Categoria salva neste aparelho, mas ainda não sincronizada. Configure a tabela no Supabase.');return false}
+ return true;
+}
+function nfSyncCategories(){nfSaveSharedCategories(nfIncomeStored())}
+
 function nfIncomeCategories(){
  let custom=nfIncomeStored();
  const result=nfIncomeDefaults.filter(c=>!custom.some(x=>x.parent===null&&x.name===c.n&&x.deleted)).map(c=>{
@@ -2000,12 +2027,92 @@ const nfIconLibrary={
  'sofa':'<path d="M4 12V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v5M4 12a2 2 0 0 0-2 2v5h20v-5a2 2 0 0 0-2-2M5 19v3m14-3v3"/>',
  'diamond':'<path d="M6 3h12l5 7-11 12L1 10zM1 10h22M6 3l6 19L18 3"/>',
  'handshake':'<path d="M2 11 8 5l4 2 4-2 6 6-6 7-4-3-4 3zM8 12l4-5M12 15l-3-3"/>',
+ 'suitcase':'<rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 7V4h6v3M8 7v14m8-14v14"/>',
+ 'passport':'<rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="11" r="4"/><path d="M8 11h8M12 7v8M9 18h6"/>',
+ 'beach':'<path d="M2 21h20M12 21V8M3 11c2-8 16-8 18 0H3zM7 11l5-3 5 3"/>',
+ 'hotel':'<rect x="4" y="3" width="16" height="18"/><path d="M9 21v-6h6v6M8 7h2m4 0h2M8 11h2m4 0h2"/>',
+ 'compass':'<circle cx="12" cy="12" r="9"/><path d="m16 8-2 6-6 2 2-6z"/>',
+ 'route':'<circle cx="5" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><path d="M7 5h9a4 4 0 0 1 0 8H8a3 3 0 0 0 0 6h9"/>',
+ 'backpack':'<rect x="5" y="5" width="14" height="17" rx="4"/><path d="M9 5V3a3 3 0 0 1 6 0v2M5 11H3v7h2m14-7h2v7h-2M8 14h8v5H8z"/>',
+ 'landmark':'<path d="m2 9 10-6 10 6zM4 21h16M6 10v9m4-9v9m4-9v9m4-9v9M2 21h20"/>',
+ 'camping':'<path d="m12 3 10 18H2zM12 3v18m-4 0 4-7 4 7"/>',
+ 'boarding-pass':'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M15 5v14M5 9h6M5 13h5"/>',
+ 'notebook':'<rect x="5" y="2" width="15" height="20" rx="2"/><path d="M9 2v20M12 7h5m-5 4h5m-5 4h4"/>',
+ 'school':'<path d="m2 10 10-7 10 7v11H2zM9 21v-7h6v7M6 11h2m8 0h2"/>',
+ 'calculator':'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8v4H8zM8 14h1m3 0h1m3 0h1M8 18h1m3 0h1m3 0h1"/>',
+ 'microscope':'<path d="m9 3 5 5-3 3-5-5zM12 10a6 6 0 0 1 4 10M5 20h15M7 17h5M4 13l4-4"/>',
+ 'flask':'<path d="M9 2h6M10 2v8L4 20h16l-6-10V2M7 16h10"/>',
+ 'palette':'<path d="M12 2a10 10 0 1 0 0 20h2a3 3 0 0 0 0-6h-1a2 2 0 0 1 0-4h3a6 6 0 0 0 0-10z"/><circle cx="7" cy="10" r="1"/><circle cx="10" cy="6" r="1"/><circle cx="16" cy="7" r="1"/>',
+ 'ruler':'<rect x="3" y="8" width="18" height="8" rx="1" transform="rotate(-25 12 12)"/><path d="m8 7 2 3m2-5 2 3m2-5 2 3"/>',
+ 'library':'<path d="M4 3h5v18H4zM10 5h5v16h-5zM16 2l5 1-3 18-5-1z"/>',
+ 'diploma':'<rect x="3" y="3" width="18" height="14" rx="2"/><path d="M7 8h10M7 12h6m2 5v5l3-2 3 2v-5"/>',
+ 'language':'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-5 6-5 12 0 18m0-18c5 6 5 12 0 18"/>',
+ 'doctor':'<circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3M12 14v6m-3-3h6"/>',
+ 'hospital':'<rect x="4" y="4" width="16" height="17"/><path d="M9 21v-5h6v5M12 7v6m-3-3h6"/>',
+ 'tooth':'<path d="M12 5C7 1 3 5 4 10l3 11 4-7h2l4 7 3-11c1-5-3-9-8-5z"/>',
+ 'first-aid':'<rect x="3" y="6" width="18" height="15" rx="2"/><path d="M9 6V3h6v3M12 10v7m-3-3h6"/>',
+ 'syringe':'<path d="m5 19 10-10m-3-3 6 6m-4-9 7 7M3 21l4-4M17 2l5 5"/>',
+ 'heartbeat':'<path d="M2 12h4l3-6 5 12 3-6h5"/>',
+ 'glasses':'<path d="M2 11h6l2 4h4l2-4h6M3 11l1 6h5l2-6m2 0 2 6h5l1-6"/>',
+ 'meditation':'<circle cx="12" cy="5" r="3"/><path d="M8 11h8l3 5-7 2-7-2zM3 21h18M8 16l-4 5m12-5 4 5"/>',
+ 'bed':'<path d="M3 4v17M21 10v11M3 17h18M5 10h16v7H5zM6 7h6v3H6z"/>',
+ 'bath':'<path d="M3 13h18v3a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6zM6 13V6a3 3 0 0 1 6 0M3 22l2-2m14 2-2-2"/>',
+ 'lightbulb':'<path d="M9 18h6m-5 3h4M8 15a7 7 0 1 1 8 0l-1 3H9z"/>',
+ 'fan':'<circle cx="12" cy="12" r="2"/><path d="M12 10C6 0 19 1 15 10M14 12c10-6 11 7 1 4M12 14c6 10-7 11-4 1M10 12c-10 6-11-7-1-4"/>',
+ 'hammer':'<path d="m4 21 10-10M11 4l3-2 8 8-3 3-8-8zM14 11l-3 3"/>',
+ 'paint-roller':'<rect x="3" y="3" width="16" height="8" rx="2"/><path d="M19 7h3v6H12v8"/>',
+ 'washer':'<rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="14" r="5"/><path d="M7 6h2m3 0h5"/>',
+ 'fridge':'<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M6 11h12M9 6v2m0 7v2"/>',
+ 'garage':'<path d="m2 10 10-7 10 7v11H2zM6 21v-9h12v9M6 15h12m-12 3h12"/>',
+ 'motorcycle':'<circle cx="5" cy="18" r="4"/><circle cx="19" cy="18" r="4"/><path d="m5 18 5-9h5l4 9M10 9l3 9H5m9-12h5"/>',
+ 'train':'<rect x="5" y="2" width="14" height="17" rx="4"/><path d="M5 11h14M8 19l-2 3m10-3 2 3M9 15h.01M15 15h.01"/>',
+ 'taxi':'<path d="M5 11 7 6h10l2 5M4 11h16v8H4zM6 19v2m12-2v2M9 6V3h6v3"/>',
+ 'scooter':'<circle cx="6" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><path d="M6 16h10l2-8h3M14 5h7"/>',
+ 'parking':'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 18V6h4a4 4 0 0 1 0 8H9"/>',
+ 'road':'<path d="M8 2 4 22m12-20 4 20M12 2v4m0 4v4m0 4v4"/>',
+ 'charging':'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="m13 5-5 8h4l-1 6 5-9h-4z"/>',
+ 'delivery':'<path d="M2 7h12v12H2zM14 11h4l4 4v4h-8z"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="20" r="2"/>',
+ 'chef':'<path d="M5 11a4 4 0 0 1 1-8 5 5 0 0 1 9 0 4 4 0 0 1 4 8v9H5zM5 15h14"/>',
+ 'bread':'<path d="M4 11a6 6 0 0 1 5-9c3 0 4 2 5 2a6 6 0 0 1 6 7v10H4zM4 15h16"/>',
+ 'ice-cream':'<path d="M7 12h10l-5 10zM6 12a6 6 0 1 1 12 0z"/>',
+ 'fish':'<path d="M3 12c5-8 13-8 18 0-5 8-13 8-18 0zm0 0-2-5v10z"/><circle cx="16" cy="11" r="1"/>',
+ 'cake':'<rect x="3" y="11" width="18" height="10" rx="2"/><path d="M3 15h18M12 11V5m-2 0 2-3 2 3"/>',
+ 'burger':'<path d="M3 10a9 9 0 0 1 18 0zM3 14h18M4 18h16M6 21h12M3 10v4m18-4v4"/>',
+ 'water':'<path d="M12 2C9 7 5 11 5 15a7 7 0 0 0 14 0c0-4-4-8-7-13z"/>',
+ 'cocktail':'<path d="M3 4h18l-9 10zM12 14v7m-5 0h10M15 7l4-5"/>',
+ 'briefcase-business':'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M8 7V4h8v3M2 12h20M10 12v3h4v-3"/>',
+ 'factory':'<path d="M3 21V10l6 4v-4l6 4V5h6v16zM6 18h2m4 0h2m4 0h2"/>',
+ 'presentation':'<rect x="3" y="3" width="18" height="13" rx="1"/><path d="M12 16v6m-5 0 5-6 5 6M7 12l4-4 3 2 3-4"/>',
+ 'printer':'<path d="M6 8V3h12v5M6 18H3V9h18v9h-3M6 15h12v6H6z"/>',
+ 'folder':'<path d="M2 6h8l2 3h10v12H2z"/>',
+ 'email':'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="m2 7 10 7 10-7"/>',
+ 'chart-pie':'<path d="M12 2v10h10A10 10 0 1 1 12 2zM15 2a9 9 0 0 1 7 7h-7z"/>',
+ 'calculator-money':'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8v4H8zM12 12v8m-3-6h6m-6 4h6"/>',
+ 'family':'<circle cx="8" cy="7" r="3"/><circle cx="17" cy="8" r="3"/><path d="M2 21v-4a6 6 0 0 1 12 0v4M14 15a5 5 0 0 1 8 4v2"/>',
+ 'balloon':'<ellipse cx="12" cy="8" rx="6" ry="7"/><path d="m10 15 2 3 2-3m-2 3v4"/>',
+ 'party':'<path d="m3 21 6-16 10 10zM10 3l2-2m5 5 3-2m0 9 3 1M5 11l7 7"/>',
+ 'church-building':'<path d="M4 21V10h16v11M8 10V6h8v4M12 2v4m-3-2h6M10 21v-7h4v7"/>',
+ 'hand-heart':'<path d="M3 14h5l4 4 4-2 5-1M3 18h6l4 3 8-4M12 11l-5-5a3 3 0 0 1 5-4 3 3 0 0 1 5 4z"/>',
+ 'pet-bowl':'<path d="M3 12h18l-3 9H6zM6 8h.01M12 6h.01M18 8h.01"/>',
+ 'gift-box':'<rect x="3" y="9" width="18" height="12"/><path d="M12 9v12M2 9h20V6H2zM12 6c-8 0-8-7-3-5l3 5c8 0 8-7 3-5z"/>',
+ 'crown':'<path d="m2 7 5 5 5-8 5 8 5-5-2 13H4z"/>',
+ 'fire':'<path d="M12 22c-6 0-9-4-9-9 0-4 4-8 6-11 0 5 3 5 4 8 2-2 2-4 2-6 8 8 9 18-3 18z"/>',
+ 'snowflake':'<path d="M12 2v20M3 7l18 10M3 17 21 7M9 5l3 3 3-3M9 19l3-3 3 3"/>',
+ 'qr-code':'<rect x="2" y="2" width="8" height="8"/><rect x="14" y="2" width="8" height="8"/><rect x="2" y="14" width="8" height="8"/><path d="M14 14h4v4h-4zm6 0v8m-6-1h4"/>',
+ 'barcode':'<path d="M3 5v14m3-14v14m3-14v14m4-14v14m2-14v14m4-14v14m2-14v14"/>',
+ 'flag':'<path d="M4 22V3m0 0h16l-4 5 4 5H4"/>',
+ 'bookmark':'<path d="M5 3h14v19l-7-5-7 5z"/>',
+ 'archive':'<rect x="3" y="4" width="18" height="5"/><path d="M5 9v12h14V9M10 13h4"/>',
+ 'paperclip':'<path d="m8 12 7-7a4 4 0 0 1 6 6l-9 9a6 6 0 0 1-9-9l9-9"/>',
+ 'megaphone':'<path d="M3 11h5l12-6v14L8 13H3zM7 14l2 7h4"/>',
+ 'rocket':'<path d="M6 18c0-8 5-13 14-15-1 9-6 14-14 15zM6 18l-3 3m8-8 3 3M6 11 2 9l5-3M13 18l2 4 3-5"/><circle cx="15" cy="9" r="2"/>',
+ 'umbrella-beach':'<path d="M2 21h20M12 21V8M3 11c2-9 16-9 18 0zM12 8l-5 3m5-3 5 3"/>',
  'cash':'<rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M5 9h1M18 15h1"/>'
 };
 const nfIconNames=['wallet','banknote','trending-up','award','gift','refresh-cw','credit-card','arrow-left-right','circle-help','tag',...Object.keys(nfIconLibrary)];
 function nfDrawIcon(name,color){if(nfIconLibrary[name])return '<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="'+(color||'#3478f6')+'" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">'+nfIconLibrary[name]+'</svg>';return nfIncomeIcon(name,color)}
 function nfIncomePick(parent,sub){nfIncomeCategory={parent,sub:sub||''};let c=nfIncomeCategories().find(x=>x.n===parent);let icon=document.getElementById('nf_income_cat_icon');if(icon){icon.innerHTML=nfDrawIcon(c?.i,c?.c)}let lab=document.getElementById('nf_income_cat_label');if(lab)lab.textContent=sub||parent;document.getElementById('f_category').value=sub?parent+' › '+sub:parent;nfIncomeCloseCategories()}
-function nfIncomeOpenCategories(){let el=document.getElementById('nf_income_picker');if(el){el.hidden=false;nfIncomeDrawCategories();el.querySelector('input')?.focus()}}
+function nfIncomeOpenCategories(){let el=document.getElementById('nf_income_picker');if(el){el.hidden=false;nfIncomeDrawCategories();nfLoadSharedCategories();el.querySelector('input')?.focus()}}
 function nfIncomeCloseCategories(){let el=document.getElementById('nf_income_picker');if(el)el.hidden=true}
 function nfIncomeDrawCategories(){
  let root=document.getElementById('nf_income_cat_list');if(!root)return;
@@ -2028,24 +2135,41 @@ function nfCatEditor(parent,sub){
  const title=editing?'Editar '+(isSub?'subcategoria':'categoria'):'Nova '+(isSub?'subcategoria':'categoria');
  let host=document.getElementById('nf_income_picker');if(!host)return;
  let box=document.createElement('div');box.id='nf_cat_editor';box.className='nf-cat-editor-overlay';
- box.innerHTML=`<div class="nf-cat-editor-card" role="dialog" aria-modal="true" aria-label="${title}"><div class="nf-cat-editor-head"><h3>${title}</h3><button type="button" onclick="nfCatClose()" aria-label="Fechar">×</button></div><label class="nf-cat-name">Nome<input id="nf_cat_name" maxlength="60" placeholder="Ex.: ${isSub?'Renda extra':'Meu negócio'}" value="${esc(oldName)}"></label><div class="nf-cat-preview"><span id="nf_cat_preview_icon"></span><div><small>Pré-visualização</small><strong id="nf_cat_preview_name">${esc(oldName||'Minha categoria')}</strong></div></div><label class="nf-cat-name">Escolha uma cor</label><div class="nf-cat-colors" id="nf_cat_colors"></div><label class="nf-cat-name">Escolha um desenho</label><input id="nf_cat_icon_search" placeholder="Buscar desenho: casa, carro, saúde..." oninput="nfCatDrawIcons()"><div class="nf-cat-icon-grid" id="nf_cat_icon_grid"></div><div class="nf-cat-editor-actions">${editing?'<button type="button" class="btn danger" onclick="nfCatDelete()">Excluir</button>':''}<button type="button" class="btn" onclick="nfCatClose()">Cancelar</button><button type="button" class="btn primary" onclick="nfCatSave()">Salvar</button></div></div>`;
+ box.innerHTML=`<div class="nf-cat-editor-card" role="dialog" aria-modal="true" aria-label="${title}"><div class="nf-cat-editor-head"><h3>${title}</h3><button type="button" onclick="nfCatClose()" aria-label="Fechar">×</button></div><label class="nf-cat-name">Nome<input id="nf_cat_name" maxlength="60" placeholder="Ex.: ${isSub?'Renda extra':'Meu negócio'}" value="${esc(oldName)}"></label><div class="nf-cat-preview"><span id="nf_cat_preview_icon"></span><div><small>Pré-visualização</small><strong id="nf_cat_preview_name">${esc(oldName||'Minha categoria')}</strong></div></div><label class="nf-cat-name">Escolha uma cor</label><div class="nf-cat-colors" id="nf_cat_colors"></div><label class="nf-cat-name">Escolha um desenho</label><input id="nf_cat_icon_search" placeholder="Buscar desenho: casa, carro, saúde..." oninput="nfCatDrawIcons()"><div class="nf-cat-icon-sectors" id="nf_cat_icon_sectors"></div><div class="nf-cat-icon-grid" id="nf_cat_icon_grid"></div><div class="nf-cat-editor-actions">${editing?'<button type="button" class="btn danger" onclick="nfCatDelete()">Excluir</button>':''}<button type="button" class="btn" onclick="nfCatClose()">Cancelar</button><button type="button" class="btn primary" onclick="nfCatSave()">Salvar</button></div></div>`;
  host.appendChild(box);
  let input=document.getElementById('nf_cat_name');input.addEventListener('input',nfCatPreview);
- nfCatDrawColors();nfCatDrawIcons();nfCatPreview();input.focus();
+ nfSelectedIconSector='Todos';nfCatDrawColors();nfCatDrawSectors();nfCatDrawIcons();nfCatPreview();input.focus();
 }
 function nfCatClose(){document.getElementById('nf_cat_editor')?.remove()}
 function nfCatPreview(){let name=document.getElementById('nf_cat_name')?.value.trim()||'Minha categoria';let label=document.getElementById('nf_cat_preview_name');if(label)label.textContent=name;let icon=document.getElementById('nf_cat_preview_icon');if(icon)icon.innerHTML=nfDrawIcon(nfCatChosenIcon,nfCatChosenColor)}
 function nfCatDrawColors(){const colors=['#3478f6','#0ba574','#b4418e','#ec2069','#7eb816','#aa5fb8','#c55a96','#89909d','#e2a02b','#ed6a31','#14b8a6','#64748b','#b45309','#ef4444','#06b6d4','#6366f1','#84cc16','#f59e0b','#db2777','#0f766e','#8b5cf6','#334155','#22c55e','#f97316'];let el=document.getElementById('nf_cat_colors');if(el)el.innerHTML=colors.map(c=>`<button type="button" aria-label="Cor ${c}" title="${c}" class="nf-cat-swatch ${nfCatChosenColor===c?'selected':''}" style="background:${c}" onclick="nfCatChosenColor='${c}';nfCatDrawColors();nfCatDrawIcons();nfCatPreview()"></button>`).join('')+`<label class="nf-cat-custom-color" title="Cor personalizada"><input type="color" value="${nfCatChosenColor}" onchange="nfCatChosenColor=this.value;nfCatDrawColors();nfCatDrawIcons();nfCatPreview()"></label>`}
-function nfCatDrawIcons(){let el=document.getElementById('nf_cat_icon_grid');if(!el)return;let q=(document.getElementById('nf_cat_icon_search')?.value||'').toLowerCase();const aliases={'house':'home','casa':'home','carro':'car','saúde':'stethoscope','medico':'stethoscope','comida':'utensils','viagem':'plane','trabalho':'briefcase','dinheiro':'wallet','salario':'wallet','amor':'heart','casamento':'rings','familia':'users','estudo':'book','compras':'shopping-bag','esporte':'dumbbell','banco':'building','pet':'paw','animal':'paw','igreja':'church','transporte':'bus','beleza':'flower','musica':'music','lazer':'gamepad'};let filter=aliases[q]||q;el.innerHTML=nfIconNames.filter((n,i,a)=>a.indexOf(n)===i&&(!filter||n.includes(filter))).map(n=>`<button type="button" title="${n}" aria-label="Ícone ${n}" class="nf-cat-icon-option ${nfCatChosenIcon===n?'selected':''}" onclick="nfCatChosenIcon='${n}';nfCatDrawIcons();nfCatPreview()">${nfDrawIcon(n,nfCatChosenColor)}</button>`).join('')||'<p class="mini">Nenhum desenho encontrado. Tente outro termo.</p>'}
+const nfIconSectors={
+ 'Viagens':['plane','suitcase','passport','beach','hotel','compass','route','backpack','landmark','camping','boarding-pass','globe','map-pin','mountain','ship','umbrella-beach'],
+ 'Educação':['graduation','book','notebook','school','calculator','microscope','flask','palette','ruler','library','diploma','language','pencil','laptop'],
+ 'Saúde e bem-estar':['stethoscope','doctor','hospital','tooth','first-aid','syringe','heartbeat','pill','activity','glasses','meditation','dumbbell'],
+ 'Casa e moradia':['home','bed','bath','lightbulb','fan','hammer','paint-roller','washer','fridge','garage','sofa','key','lock','tree'],
+ 'Transporte':['car','motorcycle','bicycle','bus','train','taxi','scooter','parking','road','charging','fuel','delivery','ship'],
+ 'Alimentação':['utensils','coffee','chef','bread','pizza','ice-cream','fish','cake','burger','apple','water','cocktail'],
+ 'Trabalho e negócios':['briefcase','briefcase-business','factory','presentation','printer','folder','email','store','laptop','handshake','chart-pie','calculator-money'],
+ 'Dinheiro e finanças':['wallet','banknote','coins','piggy-bank','credit-card','cash','trending-up','refresh-cw','chart-pie','calculator-money','gem','shopping-cart'],
+ 'Família e relacionamentos':['heart','rings','family','users','baby','gift','gift-box','balloon','party','church-building','hand-heart','paw'],
+ 'Lazer e entretenimento':['music','headphones','camera','film','gamepad','trophy','star','sun','moon','flower','bicycle','target'],
+ 'Compras e serviços':['shopping-cart','shopping-bag','store','shirt','tag','delivery','barcode','qr-code','coffee','sofa'],
+ 'Outros':['circle-help','sparkles','crown','fire','snowflake','flag','bookmark','archive','paperclip','megaphone','rocket','shield','calendar','clock','umbrella','leaf','cloud','target']
+};
+let nfSelectedIconSector='Todos';
+function nfCatDrawSectors(){let el=document.getElementById('nf_cat_icon_sectors');if(!el)return;let names=['Todos',...Object.keys(nfIconSectors)];el.innerHTML=names.map(n=>`<button type="button" class="nf-icon-sector ${nfSelectedIconSector===n?'selected':''}" onclick="nfSelectedIconSector=decodeURIComponent('${encodeURIComponent(n)}');nfCatDrawSectors();nfCatDrawIcons()">${esc(n)}</button>`).join('')}
+function nfCatDrawIcons(){let el=document.getElementById('nf_cat_icon_grid');if(!el)return;let q=(document.getElementById('nf_cat_icon_search')?.value||'').toLocaleLowerCase('pt-BR').trim();let names=nfSelectedIconSector==='Todos'?nfIconNames:(nfIconSectors[nfSelectedIconSector]||[]);const aliases={'casa':'home','carro':'car','saúde':'stethoscope','médico':'doctor','comida':'utensils','viagem':'plane','trabalho':'briefcase','dinheiro':'wallet','salário':'wallet','amor':'heart','casamento':'rings','família':'family','estudo':'book','compras':'shopping-bag','esporte':'dumbbell','banco':'building','pet':'paw','animal':'paw','igreja':'church-building','transporte':'bus','beleza':'flower','música':'music','lazer':'gamepad','passagem':'boarding-pass','praia':'beach','mala':'suitcase','avião':'plane','escola':'school','faculdade':'graduation','remédio':'pill','hospital':'hospital','moto':'motorcycle'};let filter=aliases[q]||q;let matched=names.filter((n,i,a)=>a.indexOf(n)===i&&(!filter||n.includes(filter)));el.innerHTML=matched.map(n=>`<button type="button" title="${n}" aria-label="Ícone ${n}" class="nf-cat-icon-option ${nfCatChosenIcon===n?'selected':''}" onclick="nfCatChosenIcon='${n}';nfCatDrawIcons();nfCatPreview()">${nfDrawIcon(n,nfCatChosenColor)}</button>`).join('')||'<p class="mini">Nenhum desenho encontrado neste setor. Experimente Todos ou outro termo.</p>'}
+
 function nfCatSave(){let name=document.getElementById('nf_cat_name')?.value.trim();if(!name){toast('Informe o nome da categoria.');return}let ed=nfCatEditing;if(!ed)return;let all=nfIncomeCategories();if(ed.isSub){let parent=all.find(x=>x.n===ed.parent);if(parent?.s.some(x=>x.toLowerCase()===name.toLowerCase()&&x!==ed.oldName)){toast('Essa subcategoria já existe.');return}}else if(all.some(x=>x.n.toLowerCase()===name.toLowerCase()&&x!==ed.oldName)){toast('Essa categoria já existe.');return}
  let custom=nfIncomeStored();if(ed.editing){let prev=custom.find(x=>x.parent===(ed.isSub?ed.parent:null)&&x.name===ed.oldName);if(prev){prev.name=name;prev.icon=nfCatChosenIcon;prev.color=nfCatChosenColor;prev.deleted=false}else custom.push({parent:ed.isSub?ed.parent:null,name,icon:nfCatChosenIcon,color:nfCatChosenColor});if(!ed.isSub&&name!==ed.oldName){custom.filter(x=>x.parent===ed.oldName).forEach(x=>x.parent=name);if(nfIncomeDefaults.some(x=>x.n===ed.oldName))custom.push({parent:null,name:ed.oldName,deleted:true})}if(nfIncomeCategory?.parent===ed.oldName&&!ed.isSub)nfIncomeCategory.parent=name;if(ed.isSub&&nfIncomeCategory?.parent===ed.parent&&nfIncomeCategory?.sub===ed.oldName)nfIncomeCategory.sub=name;
  }else custom.push({parent:ed.isSub?ed.parent:null,name,icon:nfCatChosenIcon,color:nfCatChosenColor});
  try{localStorage.setItem(nfIncomeKey('categories'),JSON.stringify(custom))}catch(e){toast('Não foi possível salvar no navegador.');return}
- nfIncomeExpanded=ed.isSub?ed.parent:name;nfCatClose();nfIncomeDrawCategories();if(nfIncomeCategory)nfIncomePick(nfIncomeCategory.parent,nfIncomeCategory.sub);toast('Categoria salva neste dispositivo');
+ nfSyncCategories();nfIncomeExpanded=ed.isSub?ed.parent:name;nfCatClose();nfIncomeDrawCategories();if(nfIncomeCategory)nfIncomePick(nfIncomeCategory.parent,nfIncomeCategory.sub);toast('Categoria salva neste dispositivo');
 }
-function nfCatDelete(){let ed=nfCatEditing;if(!ed?.editing)return;let message=ed.isSub?'Excluir esta subcategoria? Os lançamentos antigos continuarão com a classificação original.':'Excluir esta categoria e ocultar suas subcategorias? Os lançamentos antigos não serão apagados.';if(!confirm(message))return;let custom=nfIncomeStored();let meta=custom.find(x=>x.parent===(ed.isSub?ed.parent:null)&&x.name===ed.oldName);if(meta)meta.deleted=true;else custom.push({parent:ed.isSub?ed.parent:null,name:ed.oldName,deleted:true});try{localStorage.setItem(nfIncomeKey('categories'),JSON.stringify(custom))}catch(e){toast('Não foi possível excluir.');return}if(nfIncomeCategory?.parent===ed.oldName||ed.isSub&&nfIncomeCategory?.parent===ed.parent&&nfIncomeCategory?.sub===ed.oldName)nfIncomeCategory={parent:'Outros',sub:''};nfCatClose();nfIncomeDrawCategories();nfIncomePick(nfIncomeCategory.parent,nfIncomeCategory.sub);toast('Categoria excluída da lista deste dispositivo')}
+function nfCatDelete(){let ed=nfCatEditing;if(!ed?.editing)return;let message=ed.isSub?'Excluir esta subcategoria? Os lançamentos antigos continuarão com a classificação original.':'Excluir esta categoria e ocultar suas subcategorias? Os lançamentos antigos não serão apagados.';if(!confirm(message))return;let custom=nfIncomeStored();let meta=custom.find(x=>x.parent===(ed.isSub?ed.parent:null)&&x.name===ed.oldName);if(meta)meta.deleted=true;else custom.push({parent:ed.isSub?ed.parent:null,name:ed.oldName,deleted:true});try{localStorage.setItem(nfIncomeKey('categories'),JSON.stringify(custom))}catch(e){toast('Não foi possível excluir.');return}if(nfIncomeCategory?.parent===ed.oldName||ed.isSub&&nfIncomeCategory?.parent===ed.parent&&nfIncomeCategory?.sub===ed.oldName)nfIncomeCategory={parent:'Outros',sub:''};nfSyncCategories();nfCatClose();nfIncomeDrawCategories();nfIncomePick(nfIncomeCategory.parent,nfIncomeCategory.sub);toast('Categoria excluída da lista')}
 async function nfIncomeSubmit(e){e.preventDefault();let amt=Number(document.getElementById('f_amount').value);if(!(amt>0)){toast('Informe um valor maior que zero.');nfIncomeEdit();return}let payload={couple_id:state.coupleId,owner_user_id:state.user.id,description:v('f_desc'),amount:amt,kind:'income',ownership:v('f_ownership'),visibility:v('f_visibility')||'shared',account_id:v('f_account')||null,payment_method:v('f_payment'),category_label:v('f_category'),movement_source:v('f_source'),transaction_date:(v('f_datetime')||new Date().toISOString()).slice(0,10),transaction_at:v('f_datetime')?new Date(v('f_datetime')).toISOString():new Date().toISOString(),notes:v('f_notes')};try{if(!await nfCheckDuplicate(payload,null))return}catch(err){toast('Não foi possível verificar possíveis duplicidades: '+err.message);return}let {error}=await sb.from('transactions').insert(payload);if(error){toast('Não foi possível registrar a receita: '+error.message);return}try{localStorage.setItem(nfIncomeKey('last'),JSON.stringify(nfIncomeCategory))}catch(e){}closeModal();toast('Receita registrada; saldo atualizado');render()}
-function nfIncomeOpen(){nfIncomeDigits='';nfIncomeCategory=nfIncomeLast();let all=nfIncomeCategories();if(!all.some(c=>c.n===nfIncomeCategory?.parent))nfIncomeCategory={parent:'Salário',sub:'Salário'};let c=all.find(x=>x.n===nfIncomeCategory.parent);let now=new Date(),local=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);let ac=accountOptions();modal('Registrar transação',`<div class="nf-inc-top"><div class="nf-inc-desc"><button type="button" class="nf-inc-icon-btn" title="Selecionar categoria" onclick="nfIncomeOpenCategories()"><span id="nf_income_cat_icon" style="color:${c.c}">${nfDrawIcon(c.i,c.c)}</span></button><label>Descrição<input id="f_desc" required placeholder="Ex.: Salário de outubro"></label></div><div class="nf-inc-money nf-inline-money"><label for="nf_income_native_input">VALOR DO GANHO *</label><div class="nf-inline-money-line"><span aria-hidden="true">+ R$</span><input id="nf_income_native_input" type="text" inputmode="numeric" autocomplete="off" aria-label="Valor do ganho em reais" value="0,00" onfocus="nfMoneyFocus(this)" onkeydown="nfMoneyKeydown(event,this)" oninput="nfIncomeNativeInput(this)" onblur="nfMoneyBlur(this)"></div></div><input type="hidden" id="f_amount" value="0"></div><div class="nf-inc-section"><div class="nf-form-section-title">DADOS DA RECEITA</div><div class="formgrid"><label class="full">Data e hora<input id="f_datetime" type="datetime-local" required value="${local}"></label><label class="full">Recebido em<select id="f_account"><option value="">Não vincular conta</option>${ac}</select></label></div></div><div class="nf-inc-section"><div class="nf-form-section-title">CLASSIFICAÇÃO</div><button type="button" class="nf-inc-category-choice" onclick="nfIncomeOpenCategories()"><span>Categoria</span><b id="nf_income_cat_label">${esc(nfIncomeCategory.sub||nfIncomeCategory.parent)}</b><span>›</span></button><input type="hidden" id="f_category" value="${esc(nfIncomeCategory.sub?nfIncomeCategory.parent+' › '+nfIncomeCategory.sub:nfIncomeCategory.parent)}"></div><div class="nf-inc-section"><div class="nf-form-section-title">PRIVACIDADE</div><div class="formgrid"><label>Natureza<select id="f_ownership"><option value="individual">Pessoal</option><option value="couple">Do casal</option></select></label><label>Quem pode ver<select id="f_visibility"><option value="shared">Compartilhado</option><option value="private">Somente eu</option></select></label></div></div><details class="nf-inc-section"><summary>Mais detalhes</summary><div class="formgrid"><label>Origem<select id="f_source"><option>Outra receita</option><option>Salário</option><option>Serviço/freelance</option><option>Benefício</option><option>Investimento</option></select></label><label>Forma de recebimento<select id="f_payment"><option>Pix</option><option>Transferência bancária</option><option>Dinheiro</option><option>Outro</option></select></label><label class="full">Observações<textarea id="f_notes"></textarea></label></div></details><div id="nf_income_picker" class="nf-inc-picker" hidden><div class="nf-inc-picker-shade" onclick="nfIncomeCloseCategories()"></div><div class="nf-inc-picker-box"><div class="nf-inc-picker-head"><h3>Categorias de receita</h3><button type="button" onclick="nfIncomeCloseCategories()" aria-label="Fechar">×</button></div><input id="nf_income_cat_search" placeholder="Buscar categoria ou subcategoria" oninput="nfIncomeDrawCategories()"><div class="nf-inc-picker-sort"><button type="button" onclick="nfIncomeSort='az';nfIncomeDrawCategories()">A–Z</button><button type="button" onclick="nfIncomeSort='recent';nfIncomeDrawCategories()">Mais usadas recentemente</button></div><div id="nf_income_cat_list" class="nf-inc-cat-list"></div><button type="button" class="nf-inc-new-cat" onclick="nfIncomeAddCat()">＋ Nova categoria</button></div></div>`,`nfIncomeSubmit(event)`);nfMoneyStyle('income');let modalEl=document.querySelector('#modalRoot .modal');modalEl?.classList.add('nf-income-detailed');let form=modalEl?.querySelector('form');if(form){form.addEventListener('keydown',nfIncomeKeydown);let btn=form.querySelector(':scope > .actions .primary');if(btn)btn.textContent='Registrar receita';}nfIncomeSyncMoney()}
+function nfIncomeOpen(){nfIncomeDigits='';nfLoadSharedCategories();nfIncomeCategory=nfIncomeLast();let all=nfIncomeCategories();if(!all.some(c=>c.n===nfIncomeCategory?.parent))nfIncomeCategory={parent:'Salário',sub:'Salário'};let c=all.find(x=>x.n===nfIncomeCategory.parent);let now=new Date(),local=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);let ac=accountOptions();modal('Registrar transação',`<div class="nf-inc-top"><div class="nf-inc-desc"><button type="button" class="nf-inc-icon-btn" title="Selecionar categoria" onclick="nfIncomeOpenCategories()"><span id="nf_income_cat_icon" style="color:${c.c}">${nfDrawIcon(c.i,c.c)}</span></button><label>Descrição<input id="f_desc" required placeholder="Ex.: Salário de outubro"></label></div><div class="nf-inc-money nf-inline-money"><label for="nf_income_native_input">VALOR DO GANHO *</label><div class="nf-inline-money-line"><span aria-hidden="true">+ R$</span><input id="nf_income_native_input" type="text" inputmode="numeric" autocomplete="off" aria-label="Valor do ganho em reais" value="0,00" onfocus="nfMoneyFocus(this)" onkeydown="nfMoneyKeydown(event,this)" oninput="nfIncomeNativeInput(this)" onblur="nfMoneyBlur(this)"></div></div><input type="hidden" id="f_amount" value="0"></div><div class="nf-inc-section"><div class="nf-form-section-title">DADOS DA RECEITA</div><div class="formgrid"><label class="full">Data e hora<input id="f_datetime" type="datetime-local" required value="${local}"></label><label class="full">Recebido em<select id="f_account"><option value="">Não vincular conta</option>${ac}</select></label></div></div><div class="nf-inc-section"><div class="nf-form-section-title">CLASSIFICAÇÃO</div><button type="button" class="nf-inc-category-choice" onclick="nfIncomeOpenCategories()"><span>Categoria</span><b id="nf_income_cat_label">${esc(nfIncomeCategory.sub||nfIncomeCategory.parent)}</b><span>›</span></button><input type="hidden" id="f_category" value="${esc(nfIncomeCategory.sub?nfIncomeCategory.parent+' › '+nfIncomeCategory.sub:nfIncomeCategory.parent)}"></div><div class="nf-inc-section"><div class="nf-form-section-title">PRIVACIDADE</div><div class="formgrid"><label>Natureza<select id="f_ownership"><option value="individual">Pessoal</option><option value="couple">Do casal</option></select></label><label>Quem pode ver<select id="f_visibility"><option value="shared">Compartilhado</option><option value="private">Somente eu</option></select></label></div></div><details class="nf-inc-section"><summary>Mais detalhes</summary><div class="formgrid"><label>Origem<select id="f_source"><option>Outra receita</option><option>Salário</option><option>Serviço/freelance</option><option>Benefício</option><option>Investimento</option></select></label><label>Forma de recebimento<select id="f_payment"><option>Pix</option><option>Transferência bancária</option><option>Dinheiro</option><option>Outro</option></select></label><label class="full">Observações<textarea id="f_notes"></textarea></label></div></details><div id="nf_income_picker" class="nf-inc-picker" hidden><div class="nf-inc-picker-shade" onclick="nfIncomeCloseCategories()"></div><div class="nf-inc-picker-box"><div class="nf-inc-picker-head"><h3>Categorias de receita</h3><button type="button" onclick="nfIncomeCloseCategories()" aria-label="Fechar">×</button></div><input id="nf_income_cat_search" placeholder="Buscar categoria ou subcategoria" oninput="nfIncomeDrawCategories()"><div class="nf-inc-picker-sort"><button type="button" onclick="nfIncomeSort='az';nfIncomeDrawCategories()">A–Z</button><button type="button" onclick="nfIncomeSort='recent';nfIncomeDrawCategories()">Mais usadas recentemente</button></div><div id="nf_income_cat_list" class="nf-inc-cat-list"></div><button type="button" class="nf-inc-new-cat" onclick="nfIncomeAddCat()">＋ Nova categoria</button></div></div>`,`nfIncomeSubmit(event)`);nfMoneyStyle('income');let modalEl=document.querySelector('#modalRoot .modal');modalEl?.classList.add('nf-income-detailed');let form=modalEl?.querySelector('form');if(form){form.addEventListener('keydown',nfIncomeKeydown);let btn=form.querySelector(':scope > .actions .primary');if(btn)btn.textContent='Registrar receita';}nfIncomeSyncMoney()}
 
 function openForm(type){if(type==='income'){nfIncomeOpen();return}if(type==='income'||type==='expense'){
 let ac=accountOptions(),income=type==='income',now=new Date(),local=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
