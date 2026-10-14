@@ -797,6 +797,48 @@ body.dark-mode .btn.nf-action-transfer{background:#423619!important;color:#f8d57
 .nf-money-modal.nf-money-transfer .modalbox>form>.actions .primary{background:#946b15!important;border-color:#946b15!important}
 @media(max-width:600px){.nf-money-modal .modalbox{max-height:94dvh}.nf-money-modal .modalhead{padding:16px}.nf-money-modal .modalbox>form{padding:16px}.nf-money-modal .nf-money-fields{grid-template-columns:1fr}.nf-money-modal .nf-money-fields label.full{grid-column:auto}.nf-money-modal .nf-money-top #f_amount{font-size:29px}}
 
+
+/* Relatórios financeiros detalhados */
+.nf-report-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 16px}
+.nf-report-segment{display:inline-flex;align-items:center;gap:4px;padding:4px;background:var(--beige);border-radius:11px;max-width:100%;flex-wrap:wrap}
+.nf-report-segment button{border:0;border-radius:8px;background:transparent;color:var(--muted);padding:9px 13px;font-weight:650;font-size:12px}
+.nf-report-segment button.active{background:var(--card);color:var(--ink);box-shadow:0 1px 5px #00000012}
+.nf-report-summary .card{min-height:126px}
+.nf-report-summary .metric strong{font-size:clamp(22px,2.5vw,30px);margin:10px 0}
+.nf-report-panels{align-items:stretch}
+.nf-report-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.nf-report-heading h2{margin:0 0 5px}
+.nf-report-heading p{margin:0}
+.nf-report-chart{display:grid;grid-template-columns:minmax(155px,1fr) minmax(150px,1fr);align-items:center;gap:20px;min-height:220px}
+.nf-report-donut{width:min(100%,218px);aspect-ratio:1;border-radius:50%;margin:auto;display:grid;place-items:center}
+.nf-report-donut-hole{width:66%;aspect-ratio:1;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:8px}
+.nf-report-donut-hole span{color:var(--muted);font-size:11px}
+.nf-report-donut-hole strong{font-size:clamp(13px,1.5vw,20px);overflow-wrap:anywhere}
+.nf-report-legend{display:grid;gap:12px;min-width:0}
+.nf-report-legend>div{display:flex;align-items:center;gap:8px;font-size:12px}
+.nf-report-legend>div span:nth-child(2){flex:1;min-width:0;overflow-wrap:anywhere}
+.nf-report-dot{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
+.nf-report-categories{display:grid;gap:2px}
+.nf-report-cat{border-bottom:1px solid var(--line)}
+.nf-report-cat:last-child{border-bottom:0}
+.nf-report-cat-button{display:flex;align-items:center;gap:11px;width:100%;background:transparent;border:0;color:var(--ink);text-align:left;padding:14px 0}
+.nf-report-cat-label{flex:1;min-width:0;display:grid;gap:9px;font-size:13px}
+.nf-report-track{display:block;width:100%;height:6px;border-radius:8px;background:var(--beige);overflow:hidden}
+.nf-report-track>span{display:block;height:100%;border-radius:8px}
+.nf-report-cat-value{display:grid;gap:5px;text-align:right;white-space:nowrap;font-size:12px}
+.nf-report-cat-value small{color:var(--muted)}
+.nf-report-cat-detail{padding:3px 0 9px 22px;background:transparent}
+.nf-report-tx{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+.nf-report-tx:last-child{border-bottom:0}
+.nf-report-tx>span{display:grid;gap:5px;min-width:0}
+.nf-report-tx b{font-size:13px;overflow-wrap:anywhere}
+.nf-report-tx small{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.nf-report-tx>strong{font-size:13px;text-align:right;white-space:nowrap}
+body.dark-mode .nf-report-segment{background:#202833}
+body.dark-mode .nf-report-segment button.active{background:#344557;color:#fff}
+@media(max-width:1150px){.nf-report-chart{grid-template-columns:1fr}.nf-report-legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.nf-report-chart{grid-template-columns:1fr}.nf-report-legend{grid-template-columns:1fr}.nf-report-toolbar .nf-report-segment{width:100%}.nf-report-toolbar .nf-report-segment button{flex:1}.nf-report-heading .nf-report-segment{width:100%}.nf-report-heading .nf-report-segment button{flex:1}}
+
 </style>
 <style>
 .nf-ai-dashboard{display:grid;gap:16px;border:1px solid var(--line)}
@@ -1410,7 +1452,51 @@ async function editGoalItem(id){let q=await sb.from('goal_items').select('*').eq
 async function deleteGoalItem(id){if(!confirm('Excluir este item do objetivo?'))return;let q=await sb.from('goal_items').delete().eq('id',id).eq('couple_id',state.coupleId);if(q.error)toast('Não foi possível excluir: '+q.error.message);else{toast('Item excluído');render()}}
 async function editGoal(id){let q=await sb.from('goals').select('*').eq('id',id).single();let g=q.data;if(q.error||!g){toast('Não foi possível abrir o objetivo.');return}modal('Editar objetivo',`<div class="formgrid"><label>Nome<input id="f_name" value="${esc(g.name)}" required></label><label>Natureza<select id="f_ownership"><option value="individual" ${g.ownership==='individual'?'selected':''}>Individual</option><option value="couple" ${g.ownership==='couple'?'selected':''}>Do casal</option></select></label><label>Meta financeira<input id="f_target" type="number" step="0.01" value="${Number(g.target_amount||0)}"></label><label>Já guardado<input id="f_saved" type="number" step="0.01" value="${Number(g.saved_amount||0)}"></label><label>Prazo<input id="f_deadline" type="date" value="${esc(g.deadline||'')}"></label><label class="full">Observações<textarea id="f_notes">${esc(g.notes||'')}</textarea></label></div>`,`submitGoalEdit(event,'${id}')`)}
 async function submitGoalEdit(e,id){e.preventDefault();let q=await sb.from('goals').update({name:v('f_name'),ownership:v('f_ownership'),target_amount:Number(v('f_target')||0),saved_amount:Number(v('f_saved')||0),deadline:v('f_deadline')||null,notes:v('f_notes'),updated_at:new Date().toISOString()}).eq('id',id).eq('couple_id',state.coupleId);if(q.error){toast('Não foi possível atualizar: '+q.error.message);return}closeModal();toast('Objetivo atualizado');render()}
-async function relatorios(){let x=await data(),r=x.transactions.filter(t=>t.kind==='income').reduce((s,t)=>s+Number(t.amount),0),d=x.transactions.filter(t=>t.kind==='expense').reduce((s,t)=>s+Number(t.amount),0);return layout('Relatórios','Resumo dos dados que já estão no banco.')+`<div class="grid g3"><div class="card metric"><small>Receitas</small><strong>${brl(r)}</strong></div><div class="card metric"><small>Despesas</small><strong>${brl(d)}</strong></div><div class="card metric"><small>Comprometimento</small><strong>${r?(d/r*100).toFixed(1):0}%</strong></div></div><div class="section card"><div class="notice">📊 Os relatórios passam a refletir os lançamentos reais dos dois usuários conforme a base for preenchida.</div></div>`}
+/* Relatórios detalhados — dados existentes, sem gravações */
+let nfReportScope='mine';
+let nfReportKind='expense';
+let nfReportCategory='';
+function nfReportSetScope(scope){nfReportScope=scope;nfReportCategory='';render()}
+function nfReportSetKind(kind){nfReportKind=kind;nfReportCategory='';render()}
+function nfReportSetCategory(cat){nfReportCategory=nfReportCategory===cat?'':cat;render()}
+function nfReportDate(t){return String(t.transaction_date||'').slice(0,10).split('-').reverse().join('/')}
+function nfReportPct(value,total){return total>0?value/total*100:0}
+function nfReportDonut(items,total){
+ const colors=['#3297d1','#e7ae27','#8179e8','#23a58b','#e47964','#9b7a53','#df65a6','#6d98a9'];
+ let pos=0;
+ const stops=items.map((item,i)=>{const from=pos;pos+=nfReportPct(item.total,total);return `${colors[i%colors.length]} ${from.toFixed(3)}% ${pos.toFixed(3)}%`});
+ return `<div class="nf-report-donut" style="background:${stops.length?'conic-gradient('+stops.join(',')+')':'var(--line)'}"><div class="nf-report-donut-hole"><span>Total</span><strong>${brl(total)}</strong></div></div>`;
+}
+async function relatorios(){
+ const x=await data();
+ const permitted=(x.transactions||[]).filter(t=>!t.deleted_at && (t.owner_user_id===state.user.id || (t.ownership==='couple' && t.visibility!=='private')));
+ const rows=permitted.filter(t=>nfReportScope==='mine'?t.owner_user_id===state.user.id:(t.ownership==='couple'&&t.visibility!=='private'));
+ const financial=rows.filter(t=>t.kind==='income'||t.kind==='expense');
+ const sum=kind=>financial.filter(t=>t.kind===kind).reduce((a,t)=>a+(Number(t.amount)||0),0);
+ const income=sum('income'),expense=sum('expense'),balance=income-expense;
+ const selected=financial.filter(t=>t.kind===nfReportKind);
+ const total=nfReportKind==='income'?income:expense;
+ const groups=new Map();
+ for(const t of selected){const label=(t.category_label||'Sem categoria').trim()||'Sem categoria';if(!groups.has(label))groups.set(label,{name:label,total:0,items:[]});const group=groups.get(label);group.total+=Number(t.amount)||0;group.items.push(t)}
+ const cats=[...groups.values()].sort((a,b)=>b.total-a.total);
+ const colors=['#3297d1','#e7ae27','#8179e8','#23a58b','#e47964','#9b7a53','#df65a6','#6d98a9'];
+ const scopeButtons=`<div class="nf-report-segment" role="group" aria-label="Escopo do relatório"><button class="${nfReportScope==='mine'?'active':''}" onclick="nfReportSetScope('mine')">👤 Minha conta</button><button class="${nfReportScope==='couple'?'active':''}" onclick="nfReportSetScope('couple')">💍 Contas do casal</button></div>`;
+ const kindButtons=`<div class="nf-report-segment" role="group" aria-label="Tipo de movimentação"><button class="${nfReportKind==='expense'?'active':''}" onclick="nfReportSetKind('expense')">Despesas</button><button class="${nfReportKind==='income'?'active':''}" onclick="nfReportSetKind('income')">Receitas</button></div>`;
+ const categoryList=cats.map((c,i)=>`<div class="nf-report-cat"><button class="nf-report-cat-button" onclick="nfReportSetCategory(decodeURIComponent('${encodeURIComponent(c.name).replace(/'/g,'%27')}'))" aria-expanded="${nfReportCategory===c.name}"><span class="nf-report-dot" style="background:${colors[i%colors.length]}"></span><span class="nf-report-cat-label"><b>${esc(c.name)}</b><span class="nf-report-track"><span style="width:${nfReportPct(c.total,total).toFixed(2)}%;background:${colors[i%colors.length]}"></span></span></span><span class="nf-report-cat-value"><b>${brl(c.total)}</b><small>${nfReportPct(c.total,total).toFixed(1).replace('.',',')}%</small></span><span>${nfReportCategory===c.name?'⌃':'⌄'}</span></button>${nfReportCategory===c.name?`<div class="nf-report-cat-detail">${c.items.slice().sort((a,b)=>String(b.transaction_at||b.transaction_date).localeCompare(String(a.transaction_at||a.transaction_date))).map(t=>`<div class="nf-report-tx"><span><b>${esc(t.description||'Movimentação')}</b><small>${esc(nfReportDate(t))} · ${esc(t.payment_method||t.movement_source||'Sem forma de pagamento')}${t.ownership==='couple'?' · Casal':' · Pessoal'}</small></span><strong class="${nfReportKind==='income'?'positive':'negative'}">${brl(t.amount)}</strong></div>`).join('')}</div>`:''}</div>`).join('');
+ const recent=financial.slice().sort((a,b)=>String(b.transaction_at||b.transaction_date).localeCompare(String(a.transaction_at||a.transaction_date))).slice(0,12);
+ const latest=recent.map(t=>`<div class="nf-report-tx"><span><b>${esc(t.description||'Movimentação')}</b><small>${esc(nfReportDate(t))} · ${esc(t.category_label||'Sem categoria')} · ${t.ownership==='couple'?'Casal':'Pessoal'}</small></span><strong class="${t.kind==='income'?'positive':'negative'}">${t.kind==='expense'?'−':'+'}${brl(t.amount)}</strong></div>`).join('');
+ return layout('Relatórios','Análise das suas movimentações financeiras, por categoria e período.')+
+ `<div class="nf-report-toolbar">${scopeButtons}<span class="mini">Transferências não entram no cálculo de receitas e despesas.</span></div>
+ <div class="grid g3 nf-report-summary">
+ <div class="card metric"><small>Receitas no período</small><strong class="positive">${brl(income)}</strong><span class="mini">${financial.filter(t=>t.kind==='income').length} lançamento(s)</span></div>
+ <div class="card metric"><small>Despesas no período</small><strong class="negative">${brl(expense)}</strong><span class="mini">${financial.filter(t=>t.kind==='expense').length} lançamento(s)</span></div>
+ <div class="card metric"><small>Resultado do período</small><strong class="${balance>=0?'positive':'negative'}">${brl(balance)}</strong><span class="mini">Receitas menos despesas — não é o saldo bancário.</span></div></div>
+ <div class="grid g2 section nf-report-panels">
+ <div class="card"><div class="nf-report-heading"><div><h2>Distribuição por categoria</h2><p class="mini">Veja a participação de cada categoria.</p></div>${kindButtons}</div>${cats.length?`<div class="nf-report-chart"><div>${nfReportDonut(cats,total)}</div><div class="nf-report-legend">${cats.map((c,i)=>`<div><span class="nf-report-dot" style="background:${colors[i%colors.length]}"></span><span>${esc(c.name)}</span><b>${nfReportPct(c.total,total).toFixed(1).replace('.',',')}%</b></div>`).join('')}</div></div>`:'<div class="empty">Nenhuma movimentação desse tipo no período selecionado.</div>'}</div>
+ <div class="card"><div class="nf-report-heading"><div><h2>${nfReportKind==='expense'?'Gastos':'Ganhos'} detalhados</h2><p class="mini">Toque em uma categoria para consultar cada lançamento.</p></div><strong>${brl(total)}</strong></div>${cats.length?`<div class="nf-report-categories">${categoryList}</div>`:'<div class="empty">Cadastre movimentações para visualizar os detalhes.</div>'}</div></div>
+ <div class="section card"><div class="nf-report-heading"><div><h2>Últimas movimentações</h2><p class="mini">Até 12 registros do período e escopo selecionados.</p></div><button class="btn" onclick="go('lancamentos')">Ver lançamentos →</button></div>${latest||'<div class="empty">Nenhum lançamento encontrado.</div>'}</div>`;
+}
+
 function config(){return layout('Configurações','Conta, casal e conexão.')+`<div class="card"><h2>Perfil</h2><p><b>${esc(state.profile?.display_name||'Usuário')}</b><br><span class="muted">${esc(state.user?.email||'')}</span></p><div class="notice">☁️ Conectado ao Supabase. Seus dados não dependem do navegador onde o site foi aberto.</div><div class="section"><h2>Privacidade financeira</h2><p class="muted">Ao autorizar, seu parceiro poderá ver apenas o saldo total das suas contas individuais, sem ver nomes de bancos, contas ou lançamentos privados.</p><button class="btn ${state.profile?.share_balance_with_partner?'primary':''}" onclick="toggleBalanceShare()">${state.profile?.share_balance_with_partner?'✓ Saldo compartilhado — clique para revogar':'Permitir que meu parceiro veja meu saldo total'}</button></div><button class="btn danger" onclick="logout()">Sair da conta</button></div>`}async function toggleBalanceShare(){let next=!state.profile?.share_balance_with_partner;let {data,error}=await sb.from('profiles').update({share_balance_with_partner:next}).eq('id',state.user.id).select('*').single();if(error){toast('Não foi possível alterar a permissão: '+error.message);return}state.profile=data;toast(next?'Compartilhamento do saldo ativado':'Compartilhamento do saldo revogado');render()}
 
 /* Elo: conversa atual e arquivo por inatividade (7 dias). Mensagens não são excluídas. */
