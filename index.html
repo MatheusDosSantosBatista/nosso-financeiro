@@ -1002,6 +1002,27 @@ body.dark-mode .nf-home-chart-bars .in{background:#70d6a0}body.dark-mode .nf-hom
 .app>.main>.top .nf-header-tools .nf-header-logout{margin:0 0 0 5px!important;white-space:nowrap!important;flex-shrink:0!important}
 @media(max-width:600px){.app>.main>.top .nf-header-tools .nf-header-profile,.app>.main>.top .nf-header-tools .nf-header-profile .nf-avatar-photo,.app>.main>.top .nf-header-tools .nf-header-profile .avatar{width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;max-width:36px!important;max-height:36px!important;flex-basis:36px!important}.app>.main>.top .nf-header-tools .userpill{width:36px!important;min-width:36px!important;flex-basis:36px!important}}
 </style>
+<style>
+/* Ícone de privacidade sem moldura, igual ao controle de tema. */
+.app>.main>.top .nf-header-tools button.nf-privacy-toggle,
+.app>.main>.top .nf-header-tools button.nf-privacy-toggle:hover,
+.app>.main>.top .nf-header-tools button.nf-privacy-toggle:active,
+.app>.main>.top .nf-header-tools button.nf-privacy-toggle:focus {
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  border-radius:0!important;
+  padding:0!important;
+  transform:none!important;
+  appearance:none;
+}
+.app>.main>.top .nf-header-tools button.nf-privacy-toggle:focus-visible {
+  outline:2px solid var(--terr)!important;
+  outline-offset:3px!important;
+  border-radius:5px!important;
+}
+</style>
 </head>
 <body>
 <div id="root"></div>
