@@ -1157,6 +1157,19 @@ body.dark-mode .nf-home-chart-bars .in{background:#70d6a0}body.dark-mode .nf-hom
 </style><style id="nf-calendar-style">
 .nf-date-shell{position:relative;min-width:0;width:100%;margin-top:5px}.nf-date-shell>input[type=date],.nf-date-shell>input[type=datetime-local]{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;opacity:0!important;pointer-events:none!important;z-index:-1!important}.nf-date-button{width:100%;min-height:45px;display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card,#111820);border:1px solid var(--line,#303741);border-radius:10px;color:var(--ink,#fff);text-align:left;cursor:pointer}.nf-date-button:hover,.nf-date-button:focus-visible{border-color:#12b886;outline:none}.nf-date-button svg{width:19px;height:19px;flex:none;color:#13bf89}.nf-date-button .nf-date-text{flex:1;font-weight:600}.nf-date-button .nf-date-arrow{font-size:20px;color:var(--muted,#aab);line-height:1}.nf-calendar-overlay{position:fixed;inset:0;z-index:99999;background:#0009;display:flex;align-items:center;justify-content:center;padding:15px}.nf-calendar-panel{background:#171c28;color:#f7f8fb;width:min(370px,100%);border:1px solid #30394a;border-radius:18px;padding:18px;box-shadow:0 20px 70px #0008;font-family:Inter,system-ui,sans-serif}.nf-cal-head{display:flex;gap:8px;align-items:center;margin-bottom:16px}.nf-cal-head strong{flex:1;text-align:center;text-transform:capitalize;font-size:16px}.nf-cal-head button{background:#10151e;color:#11cb8e;border:1px solid #343c4b;border-radius:9px;min-width:36px;height:36px;cursor:pointer}.nf-cal-week,.nf-cal-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;text-align:center}.nf-cal-week{font-size:11px;color:#aeb6c5;font-weight:700;margin-bottom:8px}.nf-cal-day{aspect-ratio:1;background:#10151e;color:#f6f7fa;border:1px solid #353b4a;border-radius:9px;cursor:pointer;font-weight:600;font-size:13px}.nf-cal-day:hover{border-color:#10c98c}.nf-cal-day.selected{background:#0ac78b;color:#071912;border-color:#0ac78b}.nf-cal-day.today:not(.selected){border-color:#0ac78b;color:#0ac78b}.nf-cal-day:disabled{opacity:.22;cursor:not-allowed}.nf-cal-spacer{aspect-ratio:1}.nf-cal-time{display:flex;align-items:center;gap:10px;margin-top:15px;color:#cbd4df;font-size:13px}.nf-cal-time input{flex:1;background:#10151e;border:1px solid #353b4a;color:white;border-radius:8px;padding:9px}.nf-cal-footer{display:flex;gap:9px;justify-content:space-between;margin-top:17px}.nf-cal-footer button{border-radius:9px;padding:10px 13px;cursor:pointer;border:1px solid #3b4658;background:#252d3b;color:#fff;font-weight:700}.nf-cal-footer .nf-cal-ok{background:#0aa775;border-color:#0aa775;color:#fff;flex:1}.nf-cal-footer .nf-cal-today{color:#13ce91}.nf-cal-title{font-size:13px;color:#aab5c4;margin:0 0 14px}
 </style>
+<style id="nf-typography-unified">
+/* Tipografia unificada: preserva a hierarquia e o tamanho de cada componente. */
+:root{--nf-font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+html,body,button,input,select,textarea,option,summary,[role="button"],.nf-calendar-panel,
+.nf-cal-head,.nf-cal-day,.nf-cal-time,.nf-cal-footer,.nf-date-button,
+.modal,.modalbox,.card,.side,.main,.loginbox,.toast,
+svg text,svg tspan{font-family:var(--nf-font)!important}
+body{font-synthesis:none;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+button,input,select,textarea{font-style:normal;letter-spacing:inherit}
+input::placeholder,textarea::placeholder{font-family:var(--nf-font);font-weight:400}
+/* Mesmo peso visual dos formulários de receita, sem alterar o layout. */
+.modalbox label,.nf-calendar-panel label{font-family:var(--nf-font)!important}
+</style>
 </head>
 <body>
 <div id="root"></div>
