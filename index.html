@@ -1492,6 +1492,7 @@ function nfLedgerDonut(groups,total){let palette=['#3297d1','#e6ae28','#807cf0',
 function nfLedgerEscapeAttr(v){return esc(String(v)).replace(/'/g,'&#39;')}
 async function lancamentos(){
  const x=await data(),all=x.allTransactions||x.transactions||[],accounts=x.accounts||[];
+ await nfRefreshLatestEdits();
  const bounds=periodBounds();
  const visible=all.filter(t=>!t.deleted_at && (t.owner_user_id===state.user.id||(t.ownership==='couple'&&t.visibility!=='private')));
  const rows=visible.filter(t=>{
