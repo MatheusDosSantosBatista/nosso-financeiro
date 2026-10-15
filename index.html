@@ -2407,62 +2407,88 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </script>
 
 <style id="nf-auto-scrollbar-style">
-/* Barras das janelas: sem setas, ocultas até a rolagem, desaparecem após 2 s. */
+/* A barra nativa fica sempre escondida: sem setas e sem alterar a largura dos quadros. */
 .modalbox, .modalbox *, .nf-calendar-panel, .nf-calendar-panel *,
 .nf-inc-picker-box, .nf-inc-picker-box *, .nf-account-panel, .nf-account-panel * {
-  scrollbar-width: none !important; /* Firefox */
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 .modalbox::-webkit-scrollbar, .modalbox *::-webkit-scrollbar,
 .nf-calendar-panel::-webkit-scrollbar, .nf-calendar-panel *::-webkit-scrollbar,
 .nf-inc-picker-box::-webkit-scrollbar, .nf-inc-picker-box *::-webkit-scrollbar,
 .nf-account-panel::-webkit-scrollbar, .nf-account-panel *::-webkit-scrollbar {
-  width: 0 !important;
-  height: 0 !important;
-}
-.modalbox .nf-scroll-visible, .modalbox.nf-scroll-visible,
-.nf-calendar-panel .nf-scroll-visible, .nf-calendar-panel.nf-scroll-visible,
-.nf-inc-picker-box .nf-scroll-visible, .nf-inc-picker-box.nf-scroll-visible,
-.nf-account-panel .nf-scroll-visible, .nf-account-panel.nf-scroll-visible {
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(145,157,173,.50) transparent !important;
-}
-.modalbox .nf-scroll-visible::-webkit-scrollbar, .modalbox.nf-scroll-visible::-webkit-scrollbar,
-.nf-calendar-panel .nf-scroll-visible::-webkit-scrollbar, .nf-calendar-panel.nf-scroll-visible::-webkit-scrollbar,
-.nf-inc-picker-box .nf-scroll-visible::-webkit-scrollbar, .nf-inc-picker-box.nf-scroll-visible::-webkit-scrollbar,
-.nf-account-panel .nf-scroll-visible::-webkit-scrollbar, .nf-account-panel.nf-scroll-visible::-webkit-scrollbar {
-  width: 5px !important;
-  height: 5px !important;
-}
-.modalbox .nf-scroll-visible::-webkit-scrollbar-thumb, .modalbox.nf-scroll-visible::-webkit-scrollbar-thumb,
-.nf-calendar-panel .nf-scroll-visible::-webkit-scrollbar-thumb, .nf-calendar-panel.nf-scroll-visible::-webkit-scrollbar-thumb,
-.nf-inc-picker-box .nf-scroll-visible::-webkit-scrollbar-thumb, .nf-inc-picker-box.nf-scroll-visible::-webkit-scrollbar-thumb,
-.nf-account-panel .nf-scroll-visible::-webkit-scrollbar-thumb, .nf-account-panel.nf-scroll-visible::-webkit-scrollbar-thumb {
-  background: rgba(145,157,173,.50) !important;
-  border-radius: 999px !important;
-}
-.modalbox ::-webkit-scrollbar-button, .modalbox::-webkit-scrollbar-button,
-.nf-calendar-panel ::-webkit-scrollbar-button, .nf-calendar-panel::-webkit-scrollbar-button,
-.nf-inc-picker-box ::-webkit-scrollbar-button, .nf-inc-picker-box::-webkit-scrollbar-button,
-.nf-account-panel ::-webkit-scrollbar-button, .nf-account-panel::-webkit-scrollbar-button {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
 }
+/* Indicador flutuante independente: nunca ocupa espaço no layout. */
+#nf-floating-scroll-thumb {
+  position: fixed !important;
+  z-index: 2147483646;
+  width: 4px;
+  border-radius: 999px;
+  background: rgba(152, 164, 183, .64);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.08);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .2s ease, visibility .2s ease;
+}
+#nf-floating-scroll-thumb.nf-active { opacity: 1; visibility: visible; }
 </style>
 <script id="nf-auto-scrollbar-script">
 (() => {
-  const timeouts = new WeakMap();
   const selector = '.modalbox, .nf-calendar-panel, .nf-inc-picker-box, .nf-account-panel';
-  document.addEventListener('scroll', event => {
-    const el = event.target;
-    if (!(el instanceof Element) || !(el.matches(selector) || el.closest(selector))) return;
-    el.classList.add('nf-scroll-visible');
-    const previous = timeouts.get(el);
-    if (previous) clearTimeout(previous);
-    timeouts.set(el, setTimeout(() => {
-      el.classList.remove('nf-scroll-visible');
-      timeouts.delete(el);
-    }, 2000));
+  let thumb, timer, active;
+  function ensureThumb() {
+    if (!thumb) {
+      thumb = document.createElement('div');
+      thumb.id = 'nf-floating-scroll-thumb';
+      thumb.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(thumb);
+    }
+    return thumb;
+  }
+  function getScroller(node) {
+    if (!(node instanceof Element) || !node.closest(selector)) return null;
+    let el = node;
+    while (el && el instanceof Element && el.closest(selector)) {
+      if (el.scrollHeight > el.clientHeight + 2 && el.clientHeight > 0) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+  function position(el) {
+    if (!el || !el.isConnected || el.scrollHeight <= el.clientHeight + 2) return false;
+    const rect = el.getBoundingClientRect();
+    const top = Math.max(rect.top, 0);
+    const bottom = Math.min(rect.bottom, window.innerHeight);
+    const visible = bottom - top;
+    if (visible < 24 || rect.right < 0 || rect.left > window.innerWidth) return false;
+    const h = Math.max(22, Math.min(visible, visible * el.clientHeight / el.scrollHeight));
+    const fraction = el.scrollTop / Math.max(1, el.scrollHeight - el.clientHeight);
+    const y = top + Math.max(0, visible - h) * Math.max(0, Math.min(1, fraction));
+    const bar = ensureThumb();
+    bar.style.top = `${y}px`;
+    bar.style.left = `${Math.min(window.innerWidth - 5, rect.right - 7)}px`;
+    bar.style.height = `${h}px`;
+    return true;
+  }
+  function hide() {
+    if (thumb) thumb.classList.remove('nf-active');
+    active = null;
+  }
+  document.addEventListener('scroll', e => {
+    const el = getScroller(e.target);
+    if (!el) return;
+    active = el;
+    if (position(el)) ensureThumb().classList.add('nf-active');
+    clearTimeout(timer);
+    timer = setTimeout(hide, 1000);
+  }, true);
+  window.addEventListener('resize', () => { if (active && !position(active)) hide(); });
+  document.addEventListener('click', e => {
+    if (active && !e.target.closest(selector)) hide();
   }, true);
 })();
 </script>
