@@ -2405,4 +2405,65 @@ function boot(){scan();new MutationObserver(records=>{for(const rec of records)f
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
+
+<style id="nf-auto-scrollbar-style">
+/* Barras das janelas: sem setas, ocultas até a rolagem, desaparecem após 2 s. */
+.modalbox, .modalbox *, .nf-calendar-panel, .nf-calendar-panel *,
+.nf-inc-picker-box, .nf-inc-picker-box *, .nf-account-panel, .nf-account-panel * {
+  scrollbar-width: none !important; /* Firefox */
+}
+.modalbox::-webkit-scrollbar, .modalbox *::-webkit-scrollbar,
+.nf-calendar-panel::-webkit-scrollbar, .nf-calendar-panel *::-webkit-scrollbar,
+.nf-inc-picker-box::-webkit-scrollbar, .nf-inc-picker-box *::-webkit-scrollbar,
+.nf-account-panel::-webkit-scrollbar, .nf-account-panel *::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
+.modalbox .nf-scroll-visible, .modalbox.nf-scroll-visible,
+.nf-calendar-panel .nf-scroll-visible, .nf-calendar-panel.nf-scroll-visible,
+.nf-inc-picker-box .nf-scroll-visible, .nf-inc-picker-box.nf-scroll-visible,
+.nf-account-panel .nf-scroll-visible, .nf-account-panel.nf-scroll-visible {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(145,157,173,.50) transparent !important;
+}
+.modalbox .nf-scroll-visible::-webkit-scrollbar, .modalbox.nf-scroll-visible::-webkit-scrollbar,
+.nf-calendar-panel .nf-scroll-visible::-webkit-scrollbar, .nf-calendar-panel.nf-scroll-visible::-webkit-scrollbar,
+.nf-inc-picker-box .nf-scroll-visible::-webkit-scrollbar, .nf-inc-picker-box.nf-scroll-visible::-webkit-scrollbar,
+.nf-account-panel .nf-scroll-visible::-webkit-scrollbar, .nf-account-panel.nf-scroll-visible::-webkit-scrollbar {
+  width: 5px !important;
+  height: 5px !important;
+}
+.modalbox .nf-scroll-visible::-webkit-scrollbar-thumb, .modalbox.nf-scroll-visible::-webkit-scrollbar-thumb,
+.nf-calendar-panel .nf-scroll-visible::-webkit-scrollbar-thumb, .nf-calendar-panel.nf-scroll-visible::-webkit-scrollbar-thumb,
+.nf-inc-picker-box .nf-scroll-visible::-webkit-scrollbar-thumb, .nf-inc-picker-box.nf-scroll-visible::-webkit-scrollbar-thumb,
+.nf-account-panel .nf-scroll-visible::-webkit-scrollbar-thumb, .nf-account-panel.nf-scroll-visible::-webkit-scrollbar-thumb {
+  background: rgba(145,157,173,.50) !important;
+  border-radius: 999px !important;
+}
+.modalbox ::-webkit-scrollbar-button, .modalbox::-webkit-scrollbar-button,
+.nf-calendar-panel ::-webkit-scrollbar-button, .nf-calendar-panel::-webkit-scrollbar-button,
+.nf-inc-picker-box ::-webkit-scrollbar-button, .nf-inc-picker-box::-webkit-scrollbar-button,
+.nf-account-panel ::-webkit-scrollbar-button, .nf-account-panel::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+</style>
+<script id="nf-auto-scrollbar-script">
+(() => {
+  const timeouts = new WeakMap();
+  const selector = '.modalbox, .nf-calendar-panel, .nf-inc-picker-box, .nf-account-panel';
+  document.addEventListener('scroll', event => {
+    const el = event.target;
+    if (!(el instanceof Element) || !(el.matches(selector) || el.closest(selector))) return;
+    el.classList.add('nf-scroll-visible');
+    const previous = timeouts.get(el);
+    if (previous) clearTimeout(previous);
+    timeouts.set(el, setTimeout(() => {
+      el.classList.remove('nf-scroll-visible');
+      timeouts.delete(el);
+    }, 2000));
+  }, true);
+})();
+</script>
 </body></html>
