@@ -969,6 +969,33 @@ body.dark-mode .nf-transaction-tabs{background:#282f3c}
 .modalbox::-webkit-scrollbar,.nf-calendar-panel::-webkit-scrollbar,.nf-inc-picker-box::-webkit-scrollbar,.nf-account-panel::-webkit-scrollbar,.modal form::-webkit-scrollbar{width:5px;height:5px}
 .modalbox::-webkit-scrollbar-thumb,.nf-calendar-panel::-webkit-scrollbar-thumb,.nf-inc-picker-box::-webkit-scrollbar-thumb,.nf-account-panel::-webkit-scrollbar-thumb,.modal form::-webkit-scrollbar-thumb{background:rgba(133,148,166,.32);border-radius:20px}
 .modalbox::-webkit-scrollbar-track,.nf-calendar-panel::-webkit-scrollbar-track,.nf-inc-picker-box::-webkit-scrollbar-track,.nf-account-panel::-webkit-scrollbar-track,.modal form::-webkit-scrollbar-track{background:transparent}
+
+/* Painel de patrimonio: composicao inspirada na referencia enviada */
+.nf-pat-page{display:grid;gap:22px;margin-top:18px;font-family:Inter,system-ui,sans-serif}
+.nf-pat-hero,.nf-pat-summary,.nf-pat-group,.nf-pat-partner{background:#171c28;border:1px solid #2a3140;border-radius:24px;color:#f7f8fc}
+.nf-pat-hero{padding:24px 27px;min-height:160px}
+.nf-pat-hero-top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.nf-pat-hero h2{font-size:19px;margin:0;font-weight:700}.nf-pat-hero h2 span{font-size:15px;color:#b5bfcd}
+.nf-pat-hero-top>strong{font-size:27px;letter-spacing:-.6px}.nf-pat-hero-line{height:1px;background:#606675;margin:19px 0 12px}
+.nf-pat-hero-bottom{display:grid;gap:7px;font-size:14px}.nf-pat-hero-bottom b{font-weight:700}
+.nf-pat-summary-grid,.nf-pat-groups-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}
+.nf-pat-summary{min-height:248px;padding:27px}.nf-pat-summary-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.nf-pat-summary h3{font-size:18px;margin:0}.nf-pat-summary-head>strong{font-size:14px}
+.nf-pat-summary-content{display:flex;align-items:center;gap:24px;margin-top:28px;min-width:0}
+.nf-pat-big-donut{width:124px;height:124px;flex:0 0 124px;border-radius:50%;display:grid;place-items:center}.nf-pat-big-donut>div{background:#171c28;border-radius:50%;width:62%;height:62%}
+.nf-pat-legend{min-width:0;display:grid;gap:9px;font-size:13px}.nf-pat-legend>div{display:flex;align-items:center;gap:7px;overflow-wrap:anywhere}.nf-pat-legend i{width:17px;height:17px;border:1px solid #d8e3ff;border-radius:50%;flex:0 0 17px}
+.nf-pat-group{overflow:hidden;padding:16px 14px 6px}.nf-pat-group-head{display:flex;align-items:center;gap:13px;padding:0 10px 15px}
+.nf-pat-group-head h3{font-size:17px;margin:0 0 5px}.nf-pat-group-head small{font-size:12px;color:#d2d7e1}.nf-pat-mini-donut{width:54px;height:54px;border:5px solid #5795f7;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;flex:0 0 54px}
+.nf-pat-chevron{margin-left:auto;color:#11d58d;font-size:23px}.nf-pat-account{display:flex;align-items:center;gap:12px;padding:15px 9px;border-top:1px solid #2a3140;min-width:0}
+.nf-pat-account-icon{width:46px;height:46px;flex:0 0 46px;border-radius:11px;background:#7622d5;color:white;display:grid;place-items:center;font-weight:800;font-size:19px;overflow:hidden}.nf-pat-account-icon img{width:100%;height:100%;object-fit:cover}.nf-pat-wallet{background:#00a572}.nf-pat-wallet svg,.nf-pat-partner-icon svg{width:24px;height:24px}
+.nf-pat-account-info{min-width:0;flex:1}.nf-pat-account-info b{display:block;font-size:14px;overflow-wrap:anywhere}.nf-pat-account-info small{display:block;color:#d1d7e1;font-size:12px;margin-top:4px;overflow-wrap:anywhere}
+.nf-pat-account-right{text-align:right;min-width:90px}.nf-pat-account-right small{display:block;color:#cdd3de;font-size:10px}.nf-pat-account-right strong{display:block;font-size:13px;margin-top:5px}.nf-pat-account-actions{display:flex;gap:4px;align-items:center}
+.nf-pat-icon-btn{border:1px solid #333b4a;background:#202838;color:#dce4f1;border-radius:8px;width:30px;height:30px;display:grid;place-items:center}.nf-pat-icon-btn svg{width:15px;height:15px}.nf-pat-icon-btn:hover{border-color:#4f8be5;color:#fff}.nf-pat-readonly-label{font-size:10px;color:#aeb9c8}
+.nf-pat-partner{padding:18px 22px;display:flex;align-items:center;justify-content:space-between}.nf-pat-partner>div{display:grid;gap:6px}.nf-pat-partner span{font-size:13px;color:#c8d3e1}.nf-pat-partner strong{font-size:20px}.nf-pat-partner small{font-size:11px;color:#aeb9c8}.nf-pat-partner-icon{background:#00a572;padding:11px;border-radius:12px;color:white!important}
+.nf-pat-page .negative{color:#ff4563!important}
+body:not(.dark-mode) .nf-pat-page .negative{color:#ff637c!important}
+@media(max-width:950px){.nf-pat-summary-grid,.nf-pat-groups-grid{grid-template-columns:1fr}.nf-pat-summary{min-height:220px}}
+@media(max-width:550px){.nf-pat-hero,.nf-pat-summary{padding:19px}.nf-pat-summary-content{gap:16px}.nf-pat-big-donut{width:105px;height:105px;flex-basis:105px}.nf-pat-account{gap:8px}.nf-pat-account-right{min-width:75px}.nf-pat-account-actions{flex-direction:column}}
 </style>
 <style>
 .nf-ai-dashboard{display:grid;gap:16px;border:1px solid var(--line)}
@@ -1580,14 +1607,36 @@ async function lancamentos(){
  <div class="nf-ledger-layout"><div class="nf-ledger-main"><div class="card"><h2>Extrato</h2>${nfLedgerView==='graph'?graph:calendar}</div><div class="card"><div class="nf-ledger-list-head"><h2>Movimentações</h2><small>${rows.length} lançamento(s)</small></div>${list||'<div class="empty">Nenhuma movimentação encontrada para os filtros selecionados.</div>'}</div></div><div class="nf-ledger-side"><div class="card"><div class="nf-ledger-switch nf-ledger-full"><button class="${nfLedgerKind==='income'?'active':''}" onclick="nfLedgerSet('nfLedgerKind','income')">Ganhos</button><button class="${nfLedgerKind==='expense'?'active':''}" onclick="nfLedgerSet('nfLedgerKind','expense')">Gastos</button></div><div class="nf-ledger-side-chart">${nfLedgerDonut(groups,amount)}<div><small>Total de ${nfLedgerKind==='income'?'ganhos':'gastos'}</small><h2>${brl(amount)}</h2>${groups.slice(0,5).map((g,i)=>`<div class="nf-ledger-legend"><i style="background:${palette[i%palette.length]}"></i>${esc(g.name)} (${amount?(g.total/amount*100).toFixed(0):0}%)</div>`).join('')}</div></div></div>${groups.map((g,i)=>`<div class="card nf-ledger-group"><span class="nf-ledger-group-circle" style="border-color:${palette[i%palette.length]}">${amount?(g.total/amount*100).toFixed(0):0}%</span><span><b>${esc(g.name)}</b><small>${nfLedgerKind==='expense'?'Despesa':'Receita'} por categoria</small></span><strong>${brl(g.total)}</strong></div>`).join('')}</div></div>`;
 }
 async function contas(){
- let x=await data();let visible=x.accounts.filter(a=>a.ownership==='couple'||a.owner_user_id===state.user.id||a.account_type==='wallet');
- let mine=visible.filter(a=>a.owner_user_id===state.user.id||a.ownership==='couple');
- let total=mine.reduce((n,a)=>n+Number(a.current_balance||0),0);
- let cards=visible.map(a=>{let isMine=a.owner_user_id===state.user.id,partnerWallet=a.account_type==='wallet'&&!isMine;
- let owner=partnerWallet?'Carteira do parceiro':a.account_type==='wallet'?'Minha Carteira':a.name;
- let controls=partnerWallet?'<span class="mini">Somente o titular pode editar</span>':`<button class="btn" onclick="event.stopPropagation();editAccount('${a.id}')">Editar</button> ${a.account_type==='wallet'?'':`<button class="btn danger" onclick="event.stopPropagation();nfDeleteAccount('${a.id}')">Excluir</button>`}`;
- return `<div class="card ${partnerWallet?'':'nf-record-click'}" ${partnerWallet?'':`role="button" tabindex="0" data-nf-record="account" data-nf-id="${esc(a.id)}"`}><div class="row"><div class="thumb">${a.image_url?`<img src="${esc(a.image_url)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`:nfAccountCardName(a)}</div><span class="tag">${partnerWallet?'Individual · visualização':a.ownership==='couple'?'Casal':'Individual'}</span></div><h3>${esc(owner)}</h3><p class="muted">${esc(a.account_type==='wallet'?(partnerWallet?'Saldo do parceiro':'Dinheiro em espécie'):(a.institution||a.account_type))}</p><strong>${brl(a.current_balance)}</strong><div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${controls}</div></div>`}).join('');
- return layout('Contas e cartões','Gerencie bancos, cartões e sua carteira individual.',`<button class="btn primary" onclick="openForm('account')">+ Nova conta/cartão</button>`)+`<div class="card metric section"><small>Saldo das minhas contas e contas conjuntas</small><strong>${brl(total)}</strong><span class="muted">A carteira do parceiro aparece separadamente e não entra nesta soma.</span></div><div class="grid g3 section">${cards||'<div class="empty">Nenhuma conta cadastrada.</div>'}</div>`;
+ const x=await data();
+ const visible=x.accounts.filter(a=>a.ownership==='couple'||a.owner_user_id===state.user.id||a.account_type==='wallet');
+ const own=visible.filter(a=>a.owner_user_id===state.user.id||a.ownership==='couple');
+ const positive=own.filter(a=>Number(a.current_balance||0)>=0);
+ const negative=own.filter(a=>Number(a.current_balance||0)<0);
+ const assets=positive.reduce((n,a)=>n+Number(a.current_balance||0),0);
+ const liabilities=negative.reduce((n,a)=>n+Math.abs(Number(a.current_balance||0)),0);
+ const total=assets-liabilities;
+ const myWallet=visible.find(a=>a.account_type==='wallet'&&a.owner_user_id===state.user.id);
+ const partnerWallet=visible.find(a=>a.account_type==='wallet'&&a.owner_user_id!==state.user.id);
+ const walletIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M3 9h18"/><path d="M15 13h6v5h-6a2.5 2.5 0 0 1 0-5z"/><path d="M17.5 15.5h.01"/></svg>';
+ const accountRow=(a)=>{const isWallet=a.account_type==='wallet',isMine=a.owner_user_id===state.user.id,readOnly=isWallet&&!isMine;
+ const name=isWallet?(isMine?'Minha Carteira':'Carteira do parceiro'):a.name;
+ const icon=a.image_url?`<img src="${esc(a.image_url)}" alt=""/>`:isWallet?walletIcon:nfAccountCardName(a);
+ return `<div class="nf-pat-account ${readOnly?'nf-pat-readonly':''}"><div class="nf-pat-account-icon ${isWallet?'nf-pat-wallet':''}">${icon}</div><div class="nf-pat-account-info"><b>${esc(name)}</b><small>${esc(isWallet?(isMine?'Dinheiro em espécie':'Carteira individual'):(a.institution||a.account_type))}</small></div><div class="nf-pat-account-right"><small>Saldo atual</small><strong class="${Number(a.current_balance||0)<0?'negative':''}">${brl(a.current_balance)}</strong></div><div class="nf-pat-account-actions">${readOnly?'<span class="nf-pat-readonly-label">Somente leitura</span>':`<button class="nf-pat-icon-btn" onclick="editAccount('${a.id}')" title="Editar conta" aria-label="Editar ${esc(name)}">${iconSvg('edit')}</button>${isWallet?'':`<button class="nf-pat-icon-btn" onclick="nfDeleteAccount('${a.id}')" title="Excluir conta" aria-label="Excluir ${esc(name)}">${iconSvg('trash')}</button>`}`}</div></div>`;
+ };
+ const group=(items,title,amount,kind)=>{if(!items.length)return '';
+ const denominator=items.reduce((sum,a)=>sum+Math.abs(Number(a.current_balance||0)),0);
+ const palette=['#5795f7','#15b987','#a47cf5','#f4b94c','#ed6c84'];
+ let cursor=0;const segments=items.map((a,i)=>{const percent=denominator?Math.abs(Number(a.current_balance||0))/denominator*100:100/items.length;const start=cursor;cursor+=percent;return `${palette[i%palette.length]} ${start}% ${cursor}%`});
+ const donut=`<div class="nf-pat-donut" style="background:conic-gradient(${segments.join(',')})"><span>${items.length===1?'100%':items.length+' contas'}</span></div>`;
+ return `<section class="nf-pat-group"><div class="nf-pat-group-head"><div class="nf-pat-mini-donut" style="border-color:${palette[0]}">${items.length===1?'100%':items.length}</div><div><h3>${title}</h3><small class="${kind==='negative'?'negative':''}">${kind==='negative'?'− ':''}${brl(amount)}</small></div><span class="nf-pat-chevron">⌃</span></div><div class="nf-pat-group-list">${items.map(accountRow).join('')}</div></section>`;
+ };
+ const summary=(items,amount,label,negative)=>{const denominator=items.reduce((sum,a)=>sum+Math.abs(Number(a.current_balance||0)),0);
+ const palette=['#5795f7','#15b987','#a47cf5','#f4b94c'];let cursor=0;
+ const segments=items.length?items.map((a,i)=>{let part=denominator?Math.abs(Number(a.current_balance||0))/denominator*100:100/items.length;let start=cursor;cursor+=part;return `${palette[i%palette.length]} ${start}% ${cursor}%`}):['#303a49 0% 100%'];
+ return `<section class="nf-pat-summary"><div class="nf-pat-summary-head"><h3>${label}</h3><strong class="${negative?'negative':''}">${negative?'− ':''}${brl(amount)}</strong></div><div class="nf-pat-summary-content"><div class="nf-pat-big-donut" style="background:conic-gradient(${segments.join(',')})"><div></div></div><div class="nf-pat-legend">${items.length?items.map((a,i)=>`<div><i style="background:${palette[i%palette.length]}"></i><span>${denominator?Math.round(Math.abs(Number(a.current_balance||0))/denominator*100):0}% ${esc(a.account_type==='wallet'?'Minha Carteira':a.name)}</span></div>`).join(''):'<span class="muted">Nenhuma conta nesta categoria</span>'}</div></div></section>`;
+ };
+ const partner=partnerWallet?`<section class="nf-pat-partner"><div><span>Carteira do parceiro</span><strong>${brl(partnerWallet.current_balance)}</strong><small>Saldo individual · somente visualização</small></div><span class="nf-pat-partner-icon">${walletIcon}</span></section>`:'';
+ return layout('Meu patrimônio','Acompanhe suas contas, saldos e carteiras.',`<button class="btn primary" onclick="openForm('account')">+ Adicionar conta</button>`)+`<div class="nf-pat-page"><section class="nf-pat-hero"><div class="nf-pat-hero-top"><h2>Patrimônio <span title="Soma dos saldos positivos menos os negativos">ⓘ</span></h2><strong class="${total<0?'negative':''}">${brl(total)}</strong></div><div class="nf-pat-hero-line"></div><div class="nf-pat-hero-bottom"><span>Ativos: <b>${brl(assets)}</b></span><span>Passivos: <b class="negative">${brl(liabilities)}</b></span></div></section><div class="nf-pat-summary-grid">${summary(positive,assets,'Meus Ativos',false)}${summary(negative,liabilities,'Meus Passivos',true)}</div><div class="nf-pat-groups-grid">${group(positive,'Contas Bancárias',assets,'positive')}${group(negative,'Contas Bancárias',liabilities,'negative')}</div>${partner}</div>`;
 }
 async function nfDeleteAccount(id){
  let a=(window.__nfdata?.accounts||[]).find(x=>x.id===id);if(!a)return;
