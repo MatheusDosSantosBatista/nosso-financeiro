@@ -1871,7 +1871,7 @@ function nfTransactionEditor(t){
  const e=window.__nfLatestEdits?.[t.id];if(!e)return '';
  const p=(window.__nfAuthorProfiles||[]).find(x=>x.id===e.actor_user_id);
  const label=p?.nickname||p?.display_name||p?.full_name||(e.actor_user_id===state.user?.id?'Você':'Membro do casal');
- const when=e.created_at?new Date(e.created_at).toLocaleString('pt-BR'):'';
+ const when=e.changed_at?new Date(e.changed_at).toLocaleString('pt-BR'):'';
  return ' · Editado por '+esc(label)+(when?' em '+esc(when):'');
 }
 async function nfRefreshLatestEdits(){
@@ -1879,7 +1879,7 @@ async function nfRefreshLatestEdits(){
  try{
   const tx=window.__nfdata?.allTransactions||[];const ids=tx.filter(t=>t.ownership==='couple').map(t=>t.id);
   if(!ids.length)return;
-  const {data,error}=await sb.from('transaction_audit').select('transaction_id,actor_user_id,created_at,action').in('transaction_id',ids.slice(0,150)).eq('action','UPDATE').order('created_at',{ascending:false}).limit(300);
+  const {data,error}=await sb.from('transaction_audit').select('transaction_id,actor_user_id,changed_at,action').in('transaction_id',ids.slice(0,150)).eq('action','UPDATE').order('changed_at',{ascending:false}).limit(300);
   if(error)return;
   for(const row of data||[])if(!window.__nfLatestEdits[row.transaction_id])window.__nfLatestEdits[row.transaction_id]=row;
  }catch(e){console.warn('Histórico não disponível',e)}
