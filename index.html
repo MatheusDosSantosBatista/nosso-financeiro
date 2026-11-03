@@ -1224,6 +1224,36 @@ input::placeholder,textarea::placeholder{font-family:var(--nf-font);font-weight:
 .nf-bank-selected .nf-bank-mark{width:48px;height:48px}.nf-bank-selected>div{flex:1;min-width:0}.nf-bank-selected strong,.nf-bank-selected small{display:block}.nf-bank-selected small{color:var(--muted);font-size:11px;margin-top:3px}
 @media(max-width:470px){.nf-bank-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 5px}.nf-bank-mark{width:52px;height:52px}.nf-bank-content{padding:16px}.nf-bank-searchbar{padding:14px}}
 </style>
+<style id="nf-patrimonio-temas-fix">
+/* Cartões do patrimônio seguem o tema, sem alterar a lógica de contas. */
+body:not(.dark-mode) .nf-pat-page .nf-pat-hero,
+body:not(.dark-mode) .nf-pat-page .nf-pat-summary,
+body:not(.dark-mode) .nf-pat-page .nf-pat-group,
+body:not(.dark-mode) .nf-pat-page .nf-pat-partner {
+  background:#ffffff; color:#182638; border-color:#dfe7ef;
+  box-shadow:0 6px 22px rgba(25,59,90,.045);
+}
+body:not(.dark-mode) .nf-pat-page .nf-pat-big-donut>div {background:#ffffff}
+body:not(.dark-mode) .nf-pat-page .nf-pat-hero-line {background:#dfe7ef}
+body:not(.dark-mode) .nf-pat-page .nf-pat-account {border-top-color:#e5ebf2}
+body:not(.dark-mode) .nf-pat-page .nf-pat-hero h2 span,
+body:not(.dark-mode) .nf-pat-page .nf-pat-group-head small,
+body:not(.dark-mode) .nf-pat-page .nf-pat-account-info small,
+body:not(.dark-mode) .nf-pat-page .nf-pat-account-right small,
+body:not(.dark-mode) .nf-pat-page .nf-pat-partner span,
+body:not(.dark-mode) .nf-pat-page .nf-pat-partner small,
+body:not(.dark-mode) .nf-pat-page .nf-pat-readonly-label {color:#687789}
+body:not(.dark-mode) .nf-pat-page .nf-pat-icon-btn {
+  background:#f2f6fb; border-color:#dce5ef; color:#244565;
+}
+body:not(.dark-mode) .nf-pat-page .nf-pat-icon-btn:hover {background:#e6f0fb;border-color:#8fb5de;color:#173c63}
+body:not(.dark-mode) .nf-pat-page .nf-pat-group-toggle:hover {background:rgba(35,91,148,.06)}
+body.dark-mode .nf-pat-page .nf-pat-hero,
+body.dark-mode .nf-pat-page .nf-pat-summary,
+body.dark-mode .nf-pat-page .nf-pat-group,
+body.dark-mode .nf-pat-page .nf-pat-partner {background:#171c28;color:#f7f8fc;border-color:#2a3140}
+body.dark-mode .nf-pat-page .nf-pat-big-donut>div {background:#171c28}
+</style>
 </head>
 <body>
 <div id="root"></div>
